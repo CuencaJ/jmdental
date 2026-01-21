@@ -1,0 +1,122 @@
+/* Estilos generales */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background-color: #f5fbfc;
+  color: #1f2933;
+}
+
+/* Contenedor principal */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tarjeta principal */
+.login-card {
+  background-color: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.09);
+  padding: 40px 50px;
+  max-width: 800px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 40px;
+}
+
+/* Título centrado */
+.login-title {
+  text-align: center;
+  margin-bottom: 35px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Formulario */
+.login-form-group {
+  margin-bottom: 18px;
+}
+
+.login-label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #4b5563;
+}
+
+.login-input {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.login-input:focus {
+  border-color: #22c58b;
+  box-shadow: 0 0 0 3px rgba(34, 197, 139, 0.2);
+}
+
+/* Olvidaste tu contraseña */
+.login-forgot {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.login-forgot a {
+  color: #22c58b;
+  text-decoration: none;
+}
+
+.login-forgot a:hover {
+  text-decoration: underline;
+}
+
+/* Columna del botón */
+.login-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Botón */
+.login-button {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 30px;
+  background-color: #22c58b;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.login-button:hover {
+  background-color: #19a673;
+}
+
+.login-button:active {
+  transform: scale(0.98);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .login-card {
+    grid-template-columns: 1fr;
+    padding: 30px 25px;
+  }
+
+  .login-actions {
+    justify-content: flex-start;
+  }
+}
