@@ -1,2 +1,0 @@
-<!-- creacion de usuario, doctor-->
- 
