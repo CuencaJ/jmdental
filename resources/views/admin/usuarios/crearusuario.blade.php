@@ -126,7 +126,8 @@
                                 class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500" required>
                                 <option value="">Selecciona un rol</option>
                                 @foreach($roles as $rol)
-                                    <option value="{{ $rol->name }}" {{ old('rol') == $rol->name ? 'selected' : '' }}>
+                                    <option value="{{ $rol->name }}"
+                                        {{ (old('rol') ?? request('rol')) == $rol->name ? 'selected' : '' }}>
                                         {{ ucfirst($rol->name) }}
                                     </option>
                                 @endforeach
