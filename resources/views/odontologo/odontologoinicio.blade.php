@@ -29,7 +29,8 @@
                     <span class="material-symbols-outlined">dashboard</span>
                     <span class="text-sm">Dashboard</span>
                 </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" 
+                    href="{{ route('odontologo.pacientes.index') }}">
                     <span class="material-symbols-outlined text-slate-400">group</span>
                     <span class="text-sm">Pacientes</span>
                 </a>
