@@ -6,55 +6,8 @@
 
 <div class="flex h-screen overflow-hidden bg-slate-50">
 
-    {{-- SIDEBAR --}}
-    <aside class="w-64 flex flex-col bg-white border-r border-slate-200" style="min-height: 100vh">
-        <div class="p-6 flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white">
-                <span class="material-symbols-outlined text-sm">dentistry</span>
-            </div>
-            <h2 class="text-xl font-bold text-slate-900">DentalCare</h2>
-        </div>
-        <nav class="flex-1 px-4 space-y-1 mt-2">
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors" href="{{ route('admin.dashboard') }}">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span>Dashboard</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50 text-blue-600 font-semibold" href="{{ route('admin.usuarios.index') }}">
-                <span class="material-symbols-outlined">group</span>
-                <span>Usuarios</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                <span class="material-symbols-outlined">calendar_month</span>
-                <span>Citas</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                <span class="material-symbols-outlined">payments</span>
-                <span>Finanzas</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                <span class="material-symbols-outlined">description</span>
-                <span>Reportes</span>
-            </a>
-        </nav>
-        <div class="p-4 border-t border-slate-200">
-            <div class="flex items-center gap-3 p-2 bg-slate-50 rounded-xl">
-                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold truncate">{{ Auth::user()->name }}</p>
-                    <p class="text-xs text-slate-500">Administrador</p>
-                </div>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" title="Cerrar sesión">
-                        <span class="material-symbols-outlined text-slate-400">logout</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </aside>
-
+    @include('layouts.partials.sidebar-admin')
+    
     {{-- CONTENIDO PRINCIPAL --}}
     <main class="flex-1 flex flex-col overflow-hidden">
 

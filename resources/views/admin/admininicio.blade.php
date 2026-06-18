@@ -4,62 +4,9 @@
 
 @section('content')
 
-<div class="flex min-h-screen bg-slate-50">
+<div class="flex h-screen overflow-hidden bg-slate-50">
 
-    {{-- SIDEBAR --}}
-    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col" style="min-height: 100vh">
-        <div class="p-6 flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white">
-                <img src="{{ asset('assets/img/logo.png') }}" class="w-6 h-6 object-contain">
-            </div>
-            <h2 class="text-xl font-bold text-slate-900">DentalCare</h2>
-        </div>
-        <nav class="flex-1 px-4 space-y-1 mt-2">
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50 text-blue-600 font-semibold"
-                href="{{ route('admin.dashboard') }}">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span>Dashboard</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors"
-                href="{{ route('admin.usuarios.index') }}">
-                <span class="material-symbols-outlined">group</span>
-                <span>Usuarios</span>
-            </a>
-            {{-- <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                <span class="material-symbols-outlined">groups</span>
-                <span>Pacientes</span>
-            </a> --}}
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                <span class="material-symbols-outlined">calendar_month</span>
-                <span>Agenda</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                <span class="material-symbols-outlined">payments</span>
-                <span>Finanzas</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                <span class="material-symbols-outlined">description</span>
-                <span>Reportes</span>
-            </a>
-        </nav>
-        <div class="p-4 border-t border-slate-200">
-            <div class="flex items-center gap-3 p-2 bg-slate-50 rounded-xl">
-                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold truncate">{{ Auth::user()->name }}</p>
-                    <p class="text-xs text-slate-500">Administrador</p>
-                </div>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" title="Cerrar sesión">
-                        <span class="material-symbols-outlined text-slate-400">logout</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </aside>
+    @include('layouts.partials.sidebar-admin')
 
     {{-- CONTENIDO PRINCIPAL --}}
     <main class="flex-1 flex flex-col overflow-hidden">
@@ -97,13 +44,11 @@
                     </p>
                 </div>
                 <div class="flex gap-3">
-                    {{-- BOTÓN AÑADIR PACIENTE → redirige a crear usuario con rol paciente --}}
-                    <a href="{{ route('admin.usuarios.create') }}?rol=paciente"
+                    <a href="{{ route('admin.usuarios.create') }}"
                         class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl font-medium hover:bg-slate-50 shadow-sm">
                         <span class="material-symbols-outlined text-blue-500">person_add</span>
                         <span>Añadir Usuario</span>
                     </a>
-                    {{-- BOTÓN AGENDAR CITA --}}
                     <a href="#"
                         class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600">
                         <span class="material-symbols-outlined">calendar_today</span>

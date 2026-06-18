@@ -19,7 +19,7 @@ class UsuarioController extends Controller
         $totalRecepcionistas = User::role('recepcionista')->count();
         $totalPacientes = User::role('paciente')->count();
 
-        return view('admin.usuarios.listausuarios', compact(
+        return view('usuarios.listausuarios', compact(
             'usuarios',
             'totalAdmins',
             'totalDoctores',
@@ -32,7 +32,7 @@ class UsuarioController extends Controller
     public function create()
     {
         $roles = Role::all();
-        return view('admin.usuarios.crearusuario', compact('roles'));
+        return view('usuarios.crearusuario', compact('roles'));
     }
 
     // Guardar nuevo usuario
@@ -64,7 +64,7 @@ class UsuarioController extends Controller
     public function show($id)
     {
         $usuario = User::with('roles')->findOrFail($id);
-        return view('admin.usuarios.detalleusuario', compact('usuario'));
+        return view('usuarios.detalleusuario', compact('usuario'));
     }
 
     // Mostrar formulario de edición
@@ -72,7 +72,7 @@ class UsuarioController extends Controller
     {
         $usuario = User::with('roles')->findOrFail($id);
         $roles = Role::all();
-        return view('admin.usuarios.editarusuario', compact('usuario', 'roles'));
+        return view('usuarios.editarusuario', compact('usuario', 'roles'));
     }
 
     // Actualizar usuario

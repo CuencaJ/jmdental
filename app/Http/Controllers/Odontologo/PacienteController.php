@@ -22,7 +22,7 @@ class PacienteController extends Controller
     // Ver detalle de un paciente
     public function show($id)
     {
-        $paciente = User::role('paciente')->findOrFail($id);
-        return view('odontologo.pacientes.odontologo-pacientes-detalle', compact('paciente'));
+        $usuario = User::role('paciente')->findOrFail($id);
+        return view('usuarios.detalleusuario', compact('usuario'));
     }
 }
