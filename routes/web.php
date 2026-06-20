@@ -43,6 +43,15 @@ Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(functi
         ->names('admin.usuarios');
     Route::patch('usuarios/{id}/toggle-estado', [\App\Http\Controllers\Admin\UsuarioController::class, 'toggleEstado'])
         ->name('admin.usuarios.toggle');
+
+    Route::resource('citas', \App\Http\Controllers\Admin\CitaController::class)
+        ->names('admin.citas')
+        ->only(['index', 'create', 'store']);
+    Route::patch('citas/{id}/estado', [\App\Http\Controllers\Admin\CitaController::class, 'updateEstado'])
+        ->name('admin.citas.estado');
+
+    Route::get('/reportes/tratamientos', [\App\Http\Controllers\Admin\ReporteController::class, 'tratamientos'])
+        ->name('admin.reportes.tratamientos');
 });
 
 // Rutas odontólogo

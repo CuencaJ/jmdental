@@ -18,16 +18,6 @@
                 <input class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none"
                     placeholder="Buscar paciente, cita o historial..." type="text"/>
             </div>
-            <div class="flex items-center gap-4">
-                <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600">
-                    <span class="material-symbols-outlined">notifications</span>
-                </button>
-                <a href="#"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
-                    <span class="material-symbols-outlined">add</span>
-                    Nueva Cita
-                </a>
-            </div>
         </header>
 
         {{-- DASHBOARD --}}

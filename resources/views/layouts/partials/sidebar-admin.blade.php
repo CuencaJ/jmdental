@@ -27,15 +27,15 @@
             <span class="material-symbols-outlined">group</span>
             <span class="text-sm">Usuarios</span>
         </a>
-        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+            {{ request()->routeIs('admin.citas.*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+            href="{{ route('admin.citas.index') }}">
             <span class="material-symbols-outlined">calendar_month</span>
             <span class="text-sm">Citas</span>
         </a>
-        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
-            <span class="material-symbols-outlined">payments</span>
-            <span class="text-sm">Finanzas</span>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+            {{ request()->routeIs('admin.reportes.*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+            href="{{ route('admin.reportes.tratamientos') }}">
             <span class="material-symbols-outlined">description</span>
             <span class="text-sm">Reportes</span>
         </a>
