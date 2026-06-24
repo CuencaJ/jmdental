@@ -12,14 +12,15 @@ use Illuminate\Support\Facades\Auth;
 
 class CitaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Como por ahora solo hay una odontóloga, tomamos la primera que exista.
-        // Cuando agregues más, esto se puede convertir en un selector.
         $odontologo = Odontologo::with('user')->first();
+
+        $fechaFiltro = $request->get('fecha');
 
         $citas = Cita::with('paciente.user')
             ->when($odontologo, fn ($q) => $q->where('odontologo_id', $odontologo->id))
+            ->when($fechaFiltro, fn ($q) => $q->whereDate('fecha_hora', $fechaFiltro))
             ->orderBy('fecha_hora')
             ->get();
 
@@ -32,6 +33,7 @@ class CitaController extends Controller
         return view('citas.listacitas', compact(
             'citas',
             'odontologo',
+            'fechaFiltro',
             'totalCitas',
             'confirmadas',
             'completadas',

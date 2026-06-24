@@ -1,18 +1,73 @@
 @extends('layouts.admin')
 
-@section('titulo', 'Citas - JM Dental')
+@section('titulo', 'Agenda - JM Dental')
 
 @section('content')
 
 <div class="flex h-screen overflow-hidden bg-slate-50">
 
-    @include('layouts.partials.sidebar-admin')
+    {{-- SIDEBAR --}}
+    <aside class="w-64 flex flex-col bg-white border-r border-slate-200">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white">
+                <img src="{{ asset('assets/img/logo.png') }}" class="w-5 h-5 object-contain">
+            </div>
+            <h2 class="text-xl font-bold text-slate-900">DentalCare</h2>
+        </div>
+        <div class="flex items-center gap-3 p-3 mx-4 bg-slate-50 rounded-xl mb-4">
+            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+            </div>
+            <div class="flex flex-col overflow-hidden">
+                <h1 class="text-sm font-semibold truncate">{{ Auth::user()->name }}</h1>
+                <p class="text-xs text-slate-500">Odontólogo</p>
+            </div>
+        </div>
+        <nav class="flex-1 px-4 space-y-1">
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                {{ request()->routeIs('odontologo.dashboard') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+                href="{{ route('odontologo.dashboard') }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="text-sm">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                {{ request()->routeIs('odontologo.pacientes.*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+                href="{{ route('odontologo.pacientes.index') }}">
+                <span class="material-symbols-outlined">group</span>
+                <span class="text-sm">Pacientes</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                {{ request()->routeIs('odontologo.agenda') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+                href="{{ route('odontologo.agenda') }}">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <span class="text-sm">Agenda</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
+                <span class="material-symbols-outlined">payments</span>
+                <span class="text-sm">Ingresos</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="text-sm">Configuración</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-200 mt-auto">
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit"
+                    class="w-full flex items-center justify-center gap-2 bg-blue-500 text-white py-3 rounded-lg font-bold text-sm hover:bg-blue-600 transition-all">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+        </div>
+    </aside>
 
     {{-- CONTENIDO PRINCIPAL --}}
     <main class="flex-1 flex flex-col overflow-hidden">
 
         {{-- HEADER --}}
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center px-8">
             <div class="relative w-full max-w-md">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                 <input class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none"
@@ -38,16 +93,16 @@
                         </div>
                         <div>
                             <h1 class="text-sm font-semibold text-slate-900">{{ $odontologo->user->name }}</h1>
-                            <p class="text-xs text-slate-400">{{ $odontologo->especialidad ?? 'Odontóloga general' }}</p>
+                            <p class="text-xs text-slate-400">{{ $odontologo->especialidad ?? 'Odontólogo general' }}</p>
                         </div>
                     </div>
-                    <form method="GET" action="{{ route('admin.citas.index') }}" class="flex items-center gap-2">
+                    <form method="GET" action="{{ route('odontologo.agenda') }}" class="flex items-center gap-2">
                         <label class="text-sm text-slate-500 font-medium">Filtrar por fecha:</label>
                         <input type="date" name="fecha" value="{{ $fechaFiltro }}"
                             onchange="this.form.submit()"
                             class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-blue-400 cursor-pointer">
                         @if($fechaFiltro)
-                            <a href="{{ route('admin.citas.index') }}"
+                            <a href="{{ route('odontologo.agenda') }}"
                                 class="text-xs text-slate-400 hover:text-red-500 font-medium transition-colors">
                                 Limpiar
                             </a>
@@ -56,39 +111,28 @@
                 </div>
             @endif
 
-            {{-- FILTROS Y ACCIONES --}}
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div class="flex flex-wrap items-center gap-2">
-                    <select id="filtroEstado" onchange="filtrarPorEstado()"
-                        class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-600 outline-none cursor-pointer">
-                        <option value="todos">Todos los estados</option>
-                        <option value="pendiente">Pendientes</option>
-                        <option value="confirmada">Confirmadas</option>
-                        <option value="completada">Completadas</option>
-                        <option value="cancelada">Canceladas</option>
-                    </select>
-                    <span class="flex items-center gap-1.5 bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-lg">
-                        <span class="w-1.5 h-1.5 rounded-full bg-green-700"></span>
-                        Confirmadas
-                    </span>
-                    <span class="flex items-center gap-1.5 bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg">
-                        <span class="w-1.5 h-1.5 rounded-full bg-blue-700"></span>
-                        Completadas
-                    </span>
-                    <span class="flex items-center gap-1.5 bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-lg">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-700"></span>
-                        Pendientes
-                    </span>
-                    <span class="flex items-center gap-1.5 bg-red-100 text-red-700 text-xs font-bold px-3 py-1.5 rounded-lg">
-                        <span class="w-1.5 h-1.5 rounded-full bg-red-700"></span>
-                        Canceladas
-                    </span>
-                </div>
-                <a href="{{ route('admin.citas.create') }}"
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
-                    <span class="material-symbols-outlined text-base">add</span>
-                    Agregar cita
-                </a>
+            {{-- FILTROS --}}
+            <div class="flex flex-wrap items-center gap-2">
+                <select id="filtroEstado" onchange="filtrarPorEstado()"
+                    class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-600 outline-none cursor-pointer">
+                    <option value="todos">Todos los estados</option>
+                    <option value="pendiente">Pendientes</option>
+                    <option value="confirmada">Confirmadas</option>
+                    <option value="completada">Completadas</option>
+                    <option value="cancelada">Canceladas</option>
+                </select>
+                <span class="flex items-center gap-1.5 bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-700"></span>Confirmadas
+                </span>
+                <span class="flex items-center gap-1.5 bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-700"></span>Completadas
+                </span>
+                <span class="flex items-center gap-1.5 bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-700"></span>Pendientes
+                </span>
+                <span class="flex items-center gap-1.5 bg-red-100 text-red-700 text-xs font-bold px-3 py-1.5 rounded-lg">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-700"></span>Canceladas
+                </span>
             </div>
 
             {{-- TABLA --}}
@@ -122,24 +166,15 @@
                                     @php
                                         $estiloEstado = match($cita->estado) {
                                             'confirmada' => 'bg-green-100 text-green-700',
-                                            'pendiente' => 'bg-amber-100 text-amber-700',
+                                            'pendiente'  => 'bg-amber-100 text-amber-700',
                                             'completada' => 'bg-blue-100 text-blue-700',
-                                            'cancelada' => 'bg-red-100 text-red-700',
-                                            default => 'bg-slate-100 text-slate-600',
+                                            'cancelada'  => 'bg-red-100 text-red-700',
+                                            default      => 'bg-slate-100 text-slate-600',
                                         };
                                     @endphp
-                                    <form action="{{ route('admin.citas.estado', $cita->id) }}" method="POST"
-                                        onchange="this.submit()" class="inline-block">
-                                        @csrf
-                                        @method('PATCH')
-                                        <select name="estado"
-                                            class="px-3 py-1 rounded-full text-xs font-bold border-none outline-none cursor-pointer {{ $estiloEstado }}">
-                                            <option value="pendiente" {{ $cita->estado == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                            <option value="confirmada" {{ $cita->estado == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
-                                            <option value="completada" {{ $cita->estado == 'completada' ? 'selected' : '' }}>Completada</option>
-                                            <option value="cancelada" {{ $cita->estado == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
-                                        </select>
-                                    </form>
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $estiloEstado }}">
+                                        {{ ucfirst($cita->estado) }}
+                                    </span>
                                 </td>
                             </tr>
                         @empty
@@ -165,7 +200,7 @@
                     <span class="material-symbols-outlined text-blue-500">calendar_month</span>
                     <div>
                         <p class="text-lg font-bold text-slate-900">{{ $totalCitas }}</p>
-                        <p class="text-xs text-slate-400">Total programadas</p>
+                        <p class="text-xs text-slate-400">Total</p>
                     </div>
                 </div>
                 <div class="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3">
@@ -209,7 +244,7 @@
     function filtrarPorEstado() {
         const estado = document.getElementById('filtroEstado').value;
         document.querySelectorAll('#tablaCitas tbody tr').forEach(row => {
-            if (!row.dataset.estado) return; // no toca la fila de "no hay citas"
+            if (!row.dataset.estado) return;
             row.style.display = (estado === 'todos' || row.dataset.estado === estado)
                 ? 'table-row' : 'none';
         });

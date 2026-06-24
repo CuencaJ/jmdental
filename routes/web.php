@@ -19,12 +19,80 @@ Route::post('/registro', [AutenticacionController::class, 'registrar'])->name('r
 
 // Dashboard administrador
 Route::get('/admin/dashboard', function () {
-    return view('admin.admininicio');
+    // Tratamientos del mes
+    $inicio = \Carbon\Carbon::now()->startOfMonth();
+    $fin = \Carbon\Carbon::now()->endOfMonth();
+    $citasMes = \App\Models\Cita::where('estado', 'completada')
+        ->whereBetween('fecha_hora', [$inicio, $fin])
+        ->get();
+    $totalTratamientosMes = $citasMes->count();
+    $tratamientosMes = $citasMes->groupBy('motivo')
+        ->map(fn ($g) => $g->count())
+        ->sortDesc();
+
+    // Citas de hoy
+    $citasHoy = \App\Models\Cita::with('paciente.user')
+        ->whereDate('fecha_hora', today())
+        ->orderBy('fecha_hora')
+        ->get();
+
+    // Métricas
+    $totalUsuarios = \App\Models\User::count();
+    $totalPacientes = \App\Models\Paciente::count();
+    $pacientesActivos = \App\Models\Paciente::whereHas('user', fn($q) => $q->where('activo', true))->count();
+    $pacientesInactivos = $totalPacientes - $pacientesActivos;
+    $citasHoyConfirmadas = $citasHoy->where('estado', 'confirmada')->count();
+    $citasHoyPendientes = $citasHoy->where('estado', 'pendiente')->count();
+
+    return view('admin.admininicio', compact(
+        'totalTratamientosMes',
+        'tratamientosMes',
+        'citasHoy',
+        'totalUsuarios',
+        'totalPacientes',
+        'pacientesActivos',
+        'pacientesInactivos',
+        'citasHoyConfirmadas',
+        'citasHoyPendientes'
+    ));
 })->name('admin.dashboard')->middleware(['auth', 'role:administrador']);
 
 // Dashboard odontólogo
 Route::get('/odontologo/dashboard', function () {
-    return view('odontologo.odontologoinicio');
+    $odontologo = \App\Models\Odontologo::where('user_id', Auth::id())->first();
+
+    $citasHoy = \App\Models\Cita::with('paciente.user')
+        ->when($odontologo, fn ($q) => $q->where('odontologo_id', $odontologo->id))
+        ->whereDate('fecha_hora', today())
+        ->orderBy('fecha_hora')
+        ->get();
+
+    $inicio = \Carbon\Carbon::now()->startOfMonth();
+    $fin = \Carbon\Carbon::now()->endOfMonth();
+    $citasMes = \App\Models\Cita::where('estado', 'completada')
+        ->when($odontologo, fn ($q) => $q->where('odontologo_id', $odontologo->id))
+        ->whereBetween('fecha_hora', [$inicio, $fin])
+        ->get();
+
+    $totalTratamientosMes = $citasMes->count();
+    $tratamientosMes = $citasMes->groupBy('motivo')
+        ->map(fn ($g) => $g->count())
+        ->sortDesc();
+
+    $totalPacientes = \App\Models\Paciente::count();
+    $totalCitas = \App\Models\Cita::when($odontologo, fn ($q) => $q->where('odontologo_id', $odontologo->id))->count();
+    $citasHoyConfirmadas = $citasHoy->where('estado', 'confirmada')->count();
+    $citasHoyPendientes = $citasHoy->where('estado', 'pendiente')->count();
+
+    return view('odontologo.odontologoinicio', compact(
+        'citasHoy',
+        'totalTratamientosMes',
+        'tratamientosMes',
+        'totalPacientes',
+        'totalCitas',
+        'citasHoyConfirmadas',
+        'citasHoyPendientes'
+    ));
 })->name('odontologo.dashboard')->middleware(['auth', 'role:odontologo']);
 
 // Dashboard recepcionista
@@ -60,4 +128,6 @@ Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(func
         ->name('odontologo.pacientes.index');
     Route::get('/pacientes/{id}', [\App\Http\Controllers\Odontologo\PacienteController::class, 'show'])
         ->name('odontologo.pacientes.show');
+    Route::get('/agenda', [\App\Http\Controllers\Odontologo\AgendaController::class, 'index'])
+        ->name('odontologo.agenda');
 });

@@ -34,7 +34,9 @@
                 <span class="material-symbols-outlined">group</span>
                 <span class="text-sm">Pacientes</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                {{ request()->routeIs('odontologo.agenda') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+                href="{{ route('odontologo.agenda') }}">
                 <span class="material-symbols-outlined">calendar_today</span>
                 <span class="text-sm">Agenda</span>
             </a>
