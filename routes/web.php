@@ -130,4 +130,14 @@ Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(func
         ->name('odontologo.pacientes.show');
     Route::get('/agenda', [\App\Http\Controllers\Odontologo\AgendaController::class, 'index'])
         ->name('odontologo.agenda');
+    Route::get('/historial', [\App\Http\Controllers\Odontologo\HistorialController::class, 'index'])
+        ->name('odontologo.historial');
+    Route::get('/historial/{id}', [\App\Http\Controllers\Odontologo\HistorialController::class, 'ver'])
+        ->name('odontologo.historial.ver');
+    Route::get('/historial/{id}/editar', [\App\Http\Controllers\Odontologo\HistorialController::class, 'editar'])
+        ->name('odontologo.historial.editar');
+    Route::patch('/historial/{id}', [\App\Http\Controllers\Odontologo\HistorialController::class, 'actualizar'])
+        ->name('odontologo.historial.actualizar');
+    Route::get('/historial/archivo/{id}/eliminar', [\App\Http\Controllers\Odontologo\HistorialController::class, 'eliminarArchivo'])
+        ->name('odontologo.historial.archivo.eliminar');
 });

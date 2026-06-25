@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cita;
 use App\Models\Odontologo;
 use App\Models\Paciente;
+use App\Models\Tratamiento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -81,7 +82,24 @@ class CitaController extends Controller
         ]);
 
         $cita = Cita::findOrFail($id);
+        $estadoAnterior = $cita->estado;
         $cita->update(['estado' => $validated['estado']]);
+
+        // Si cambia a completada y no tiene tratamiento aún, se crea automáticamente
+        if ($validated['estado'] === 'completada' && $estadoAnterior !== 'completada') {
+            $yaExiste = Tratamiento::where('cita_id', $cita->id)->exists();
+            if (!$yaExiste) {
+                Tratamiento::create([
+                    'cita_id' => $cita->id,
+                    'nombre' => $cita->motivo,
+                    'descripcion' => null,
+                    'costo' => 0,
+                    'fecha_tratamiento' => $cita->fecha_hora->toDateString(),
+                    'estado' => 'en_proceso',
+                    'observaciones' => null,
+                ]);
+            }
+        }
 
         return redirect()->route('admin.citas.index')->with('mensaje', 'Estado de la cita actualizado.');
     }

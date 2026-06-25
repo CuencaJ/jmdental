@@ -40,9 +40,11 @@
                 <span class="material-symbols-outlined">calendar_today</span>
                 <span class="text-sm">Agenda</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
-                <span class="material-symbols-outlined">payments</span>
-                <span class="text-sm">Ingresos</span>
+            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                {{ request()->routeIs('odontologo.historial*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+                href="{{ route('odontologo.historial') }}">
+                <span class="material-symbols-outlined">medical_information</span>
+                <span class="text-sm">Historial Clínico</span>      
             </a>
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
                 <span class="material-symbols-outlined">settings</span>
