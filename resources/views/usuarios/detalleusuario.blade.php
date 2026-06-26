@@ -71,31 +71,32 @@
             {{-- ACCIONES RÁPIDAS --}}
             <div class="flex flex-wrap gap-3">
                 @if($usuario->hasRole('paciente'))
-                    <a href="#" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined">folder_shared</span>
-                        Ver Historial Clínico
-                    </a>
-                    <button onclick="window.print()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined">print</span>
-                        Imprimir Resumen
-                    </button>
-                    <a href="#" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined">description</span>
-                        Nuevo Registro
-                    </a>
-                    <a href="#" class="flex items-center gap-2 bg-blue-500 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20">
-                        <span class="material-symbols-outlined">calendar_add_on</span>
-                        Agendar Cita
-                    </a>
-                @endif
-                @if(Auth::user()->hasRole('administrador'))
-                    <a href="{{ route('admin.usuarios.edit', $usuario->id) }}"
-                        class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined">edit</span>
-                        Editar Usuario
-                    </a>
-                @endif
-            </div>
+                <a href="#" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined">folder_shared</span>
+                    Ver Historial Clínico
+                </a>
+                <button onclick="window.print()" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined">print</span>
+                    Imprimir Resumen
+                </button>
+                <a href="#" class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined">description</span>
+                    Nuevo Registro
+                </a>
+                <a href="#" class="flex items-center gap-2 bg-blue-500 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20">
+                    <span class="material-symbols-outlined">calendar_add_on</span>
+                    Agendar Cita
+                </a>
+            @endif
+
+            @if(Auth::user()->hasRole('administrador'))
+                <a href="{{ route('admin.usuarios.edit', $usuario->id) }}"
+                    class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined">edit</span>
+                    Editar Usuario
+                </a>
+            @endif
+        </div>
         </header>
 
         {{-- INFORMACIÓN PERSONAL --}}

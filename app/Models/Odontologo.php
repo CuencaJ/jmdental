@@ -18,15 +18,13 @@ class Odontologo extends Model
         'numero_licencia',
         'telefono',
         'descripcion',
+        'anios_experiencia',
+        'universidad',
+        'titulo',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function citas()
-    {
-        return $this->hasMany(Cita::class, 'odontologo_id');
     }
 }

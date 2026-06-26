@@ -14,7 +14,10 @@
             </div>
             <h2 class="text-xl font-bold text-slate-900">DentalCare</h2>
         </div>
-        <div class="flex items-center gap-3 p-3 mx-4 bg-slate-50 rounded-xl mb-4">
+
+        {{-- PERFIL CLICKEABLE --}}
+        <a href="{{ route('odontologo.perfil') }}"
+            class="flex items-center gap-3 p-3 mx-4 bg-slate-50 rounded-xl mb-4 hover:bg-blue-50 transition-colors">
             <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
                 {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
             </div>
@@ -22,7 +25,8 @@
                 <h1 class="text-sm font-semibold truncate">{{ Auth::user()->name }}</h1>
                 <p class="text-xs text-slate-500">Odontólogo</p>
             </div>
-        </div>
+        </a>
+
         <nav class="flex-1 px-4 space-y-1">
             <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
                 {{ request()->routeIs('odontologo.dashboard') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
@@ -48,11 +52,8 @@
                 <span class="material-symbols-outlined">medical_information</span>
                 <span class="text-sm">Historial Clínico</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" href="#">
-                <span class="material-symbols-outlined">settings</span>
-                <span class="text-sm">Configuración</span>
-            </a>
         </nav>
+
         <div class="p-4 border-t border-slate-200 mt-auto">
             <form action="{{ route('logout') }}" method="POST">
                 @csrf

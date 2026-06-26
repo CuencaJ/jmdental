@@ -40,6 +40,23 @@
                     <form action="{{ route('admin.usuarios.store') }}" method="POST" class="space-y-6">
                         @csrf
 
+                        {{-- ROL --}}
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Rol del usuario
+                            </label>
+                            <select name="rol" id="selectRol"
+                                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500" required>
+                                <option value="">Selecciona un rol</option>
+                                @foreach($roles as $rol)
+                                    <option value="{{ $rol->name }}"
+                                        {{ (old('rol') ?? request('rol')) == $rol->name ? 'selected' : '' }}>
+                                        {{ ucfirst($rol->name) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         {{-- NOMBRE --}}
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -48,16 +65,6 @@
                             <input type="text" name="name" value="{{ old('name') }}"
                                 class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
                                 placeholder="Ingresa el nombre completo" required>
-                        </div>
-
-                        {{-- EMAIL --}}
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                Correo electrónico
-                            </label>
-                            <input type="email" name="email" value="{{ old('email') }}"
-                                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                                placeholder="correo@ejemplo.com" required>
                         </div>
 
                         {{-- TELÉFONO --}}
@@ -70,21 +77,27 @@
                                 placeholder="0991234567" required>
                         </div>
 
-                        {{-- ROL --}}
+                        {{-- GÉNERO --}}
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                Rol del usuario
+                                Género
                             </label>
-                            <select name="rol"
-                                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500" required>
-                                <option value="">Selecciona un rol</option>
-                                @foreach($roles as $rol)
-                                    <option value="{{ $rol->name }}"
-                                        {{ (old('rol') ?? request('rol')) == $rol->name ? 'selected' : '' }}>
-                                        {{ ucfirst($rol->name) }}
-                                    </option>
-                                @endforeach
+                            <select name="genero"
+                                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                                <option value="">Selecciona el género</option>
+                                <option value="Masculino" {{ old('genero') == 'Masculino' ? 'selected' : '' }}>Masculino</option>
+                                <option value="Femenino" {{ old('genero') == 'Femenino' ? 'selected' : '' }}>Femenino</option>
+                                <option value="Otro" {{ old('genero') == 'Otro' ? 'selected' : '' }}>Otro</option>
                             </select>
+                        </div>
+                        {{-- EMAIL --}}
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                Correo electrónico
+                            </label>
+                            <input type="email" name="email" value="{{ old('email') }}"
+                                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                placeholder="correo@ejemplo.com" required>
                         </div>
 
                         {{-- CONTRASEÑA --}}
@@ -107,6 +120,124 @@
                                 placeholder="Repite la contraseña" required>
                         </div>
 
+                        {{-- CAMPOS EXTRA PARA PACIENTE --}}
+                        <div id="camposPaciente" class="space-y-6 hidden">
+
+                            <div class="border-t border-slate-200 pt-6">
+                                <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-blue-500">person</span>
+                                    Información Personal del Paciente
+                                </h3>
+                            </div>
+
+                            {{-- CÉDULA --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Cédula</label>
+                                <input type="text" name="cedula" value="{{ old('cedula') }}"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    placeholder="1712345678" maxlength="10">
+                            </div>
+
+                            {{-- FECHA NACIMIENTO --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha de nacimiento</label>
+                                <input type="date" name="fecha_nacimiento" value="{{ old('fecha_nacimiento') }}"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                            </div>
+
+                            {{-- DIRECCIÓN --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Dirección</label>
+                                <input type="text" name="direccion" value="{{ old('direccion') }}"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    placeholder="Av. Ejemplo N23-45, Ciudad">
+                            </div>
+
+                            <div class="border-t border-slate-200 pt-6">
+                                <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-blue-500">medical_information</span>
+                                    Información Médica
+                                </h3>
+                            </div>
+
+                            {{-- TIPO DE SANGRE --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Tipo de sangre</label>
+                                <select name="tipo_sangre"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                                    <option value="">Selecciona el tipo</option>
+                                    @foreach(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $tipo)
+                                        <option value="{{ $tipo }}" {{ old('tipo_sangre') == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- ALERGIAS --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Alergias</label>
+                                <textarea name="alergias" rows="2"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    placeholder="Ej: Penicilina, Ibuprofeno">{{ old('alergias') }}</textarea>
+                            </div>
+
+                            {{-- ENFERMEDADES CRÓNICAS --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Enfermedades crónicas</label>
+                                <textarea name="enfermedades_cronicas" rows="2"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    placeholder="Ej: Hipertensión, Diabetes">{{ old('enfermedades_cronicas') }}</textarea>
+                            </div>
+
+                            {{-- MEDICAMENTOS --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Medicamentos actuales</label>
+                                <textarea name="medicamentos_actuales" rows="2"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    placeholder="Ej: Losartán 50mg">{{ old('medicamentos_actuales') }}</textarea>
+                            </div>
+
+                            {{-- MÉDICO DE CABECERA --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Médico de cabecera</label>
+                                <input type="text" name="medico_cabecera" value="{{ old('medico_cabecera') }}"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    placeholder="Ej: Dr. Ramírez">
+                            </div>
+
+                            {{-- OBSERVACIONES --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Observaciones médicas</label>
+                                <textarea name="observaciones" rows="3"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    placeholder="Observaciones adicionales...">{{ old('observaciones') }}</textarea>
+                            </div>
+
+                            <div class="border-t border-slate-200 pt-6">
+                                <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-blue-500">contact_emergency</span>
+                                    Contacto de Emergencia
+                                </h3>
+                            </div>
+
+                            {{-- CONTACTO EMERGENCIA --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre del contacto</label>
+                                <input type="text" name="contacto_emergencia" value="{{ old('contacto_emergencia') }}"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    placeholder="Ej: Carlos Pérez">
+                            </div>
+
+                            {{-- TELÉFONO EMERGENCIA --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Teléfono del contacto</label>
+                                <input type="text" name="telefono_emergencia" value="{{ old('telefono_emergencia') }}"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    placeholder="0987654321">
+                            </div>
+
+                        </div>
+                        {{-- FIN CAMPOS PACIENTE --}}
+
                         {{-- BOTONES --}}
                         <div class="flex gap-4 pt-4">
                             <button type="submit"
@@ -126,4 +257,22 @@
     </main>
 </div>
 
+@endsection
+
+@section('scripts')
+<script>
+    const selectRol = document.getElementById('selectRol');
+    const camposPaciente = document.getElementById('camposPaciente');
+
+    function toggleCamposPaciente() {
+        if (selectRol.value === 'paciente') {
+            camposPaciente.classList.remove('hidden');
+        } else {
+            camposPaciente.classList.add('hidden');
+        }
+    }
+
+    toggleCamposPaciente();
+    selectRol.addEventListener('change', toggleCamposPaciente);
+</script>
 @endsection

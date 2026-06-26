@@ -11,11 +11,14 @@ return new class extends Migration
         Schema::create('odontologos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('cedula', 10)->unique();
-            $table->string('especialidad');
-            $table->string('numero_licencia')->unique();
+            $table->string('cedula', 10)->unique()->nullable();
+            $table->string('especialidad')->nullable();
+            $table->string('numero_licencia')->unique()->nullable();
             $table->string('telefono', 15)->nullable();
             $table->text('descripcion')->nullable();
+            $table->integer('anios_experiencia')->nullable();
+            $table->string('universidad')->nullable();
+            $table->string('titulo')->nullable();
             $table->timestamps();
         });
     }

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AutenticacionController;
+use Illuminate\Support\Facades\Auth;
 
 // Ruta principal → pantalla informativa
 Route::get('/', function () {
@@ -19,7 +20,6 @@ Route::post('/registro', [AutenticacionController::class, 'registrar'])->name('r
 
 // Dashboard administrador
 Route::get('/admin/dashboard', function () {
-    // Tratamientos del mes
     $inicio = \Carbon\Carbon::now()->startOfMonth();
     $fin = \Carbon\Carbon::now()->endOfMonth();
     $citasMes = \App\Models\Cita::where('estado', 'completada')
@@ -30,13 +30,11 @@ Route::get('/admin/dashboard', function () {
         ->map(fn ($g) => $g->count())
         ->sortDesc();
 
-    // Citas de hoy
     $citasHoy = \App\Models\Cita::with('paciente.user')
         ->whereDate('fecha_hora', today())
         ->orderBy('fecha_hora')
         ->get();
 
-    // Métricas
     $totalUsuarios = \App\Models\User::count();
     $totalPacientes = \App\Models\Paciente::count();
     $pacientesActivos = \App\Models\Paciente::whereHas('user', fn($q) => $q->where('activo', true))->count();
@@ -111,13 +109,11 @@ Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(functi
         ->names('admin.usuarios');
     Route::patch('usuarios/{id}/toggle-estado', [\App\Http\Controllers\Admin\UsuarioController::class, 'toggleEstado'])
         ->name('admin.usuarios.toggle');
-
     Route::resource('citas', \App\Http\Controllers\Admin\CitaController::class)
         ->names('admin.citas')
         ->only(['index', 'create', 'store']);
     Route::patch('citas/{id}/estado', [\App\Http\Controllers\Admin\CitaController::class, 'updateEstado'])
         ->name('admin.citas.estado');
-
     Route::get('/reportes/tratamientos', [\App\Http\Controllers\Admin\ReporteController::class, 'tratamientos'])
         ->name('admin.reportes.tratamientos');
 });
@@ -140,4 +136,10 @@ Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(func
         ->name('odontologo.historial.actualizar');
     Route::get('/historial/archivo/{id}/eliminar', [\App\Http\Controllers\Odontologo\HistorialController::class, 'eliminarArchivo'])
         ->name('odontologo.historial.archivo.eliminar');
+
+    //-- Perfil del odontólogo --
+    Route::get('/perfil', [\App\Http\Controllers\Odontologo\PerfilController::class, 'index'])
+        ->name('odontologo.perfil');
+    Route::put('/perfil', [\App\Http\Controllers\Odontologo\PerfilController::class, 'update'])
+        ->name('odontologo.perfil.update');
 });
