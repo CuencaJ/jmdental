@@ -122,10 +122,24 @@ Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(functi
 Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(function () {
     Route::get('/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'index'])
         ->name('odontologo.pacientes.index');
+    Route::get('/pacientes/crear', [\App\Http\Controllers\Odontologo\PacienteController::class, 'create'])
+        ->name('odontologo.pacientes.create');
+    Route::post('/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'store'])
+        ->name('odontologo.pacientes.store');
     Route::get('/pacientes/{id}', [\App\Http\Controllers\Odontologo\PacienteController::class, 'show'])
         ->name('odontologo.pacientes.show');
+    Route::get('/pacientes/{id}/historial', [\App\Http\Controllers\Odontologo\PacienteController::class, 'historial'])
+        ->name('odontologo.pacientes.historial');
+    Route::get('/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
+        ->name('odontologo.pacientes.resumen');
     Route::get('/agenda', [\App\Http\Controllers\Odontologo\AgendaController::class, 'index'])
         ->name('odontologo.agenda');
+    Route::get('/citas/crear', [\App\Http\Controllers\Odontologo\AgendaController::class, 'create'])
+        ->name('odontologo.citas.create');
+    Route::post('/citas', [\App\Http\Controllers\Odontologo\AgendaController::class, 'store'])
+        ->name('odontologo.citas.store');
+    Route::patch('/citas/{id}/estado', [\App\Http\Controllers\Odontologo\AgendaController::class, 'updateEstado'])
+        ->name('odontologo.citas.estado');
     Route::get('/historial', [\App\Http\Controllers\Odontologo\HistorialController::class, 'index'])
         ->name('odontologo.historial');
     Route::get('/historial/{id}', [\App\Http\Controllers\Odontologo\HistorialController::class, 'ver'])
@@ -137,7 +151,7 @@ Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(func
     Route::get('/historial/archivo/{id}/eliminar', [\App\Http\Controllers\Odontologo\HistorialController::class, 'eliminarArchivo'])
         ->name('odontologo.historial.archivo.eliminar');
 
-    //-- Perfil del odontólogo --
+    // Perfil del odontólogo
     Route::get('/perfil', [\App\Http\Controllers\Odontologo\PerfilController::class, 'index'])
         ->name('odontologo.perfil');
     Route::put('/perfil', [\App\Http\Controllers\Odontologo\PerfilController::class, 'update'])

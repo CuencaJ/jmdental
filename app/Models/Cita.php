@@ -39,4 +39,9 @@ class Cita extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function tratamiento()
+    {
+        return $this->hasOne(Tratamiento::class);
+    }
 }

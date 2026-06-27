@@ -6,65 +6,7 @@
 
 <div class="flex h-screen overflow-hidden bg-slate-50">
 
-    {{-- SIDEBAR --}}
-    <aside class="w-64 flex flex-col bg-white border-r border-slate-200">
-        <div class="p-6 flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white">
-                <img src="{{ asset('assets/img/logo.png') }}" class="w-5 h-5 object-contain">
-            </div>
-            <h2 class="text-xl font-bold text-slate-900">DentalCare</h2>
-        </div>
-
-        {{-- PERFIL CLICKEABLE --}}
-        <a href="{{ route('odontologo.perfil') }}"
-            class="flex items-center gap-3 p-3 mx-4 bg-slate-50 rounded-xl mb-4 hover:bg-blue-50 transition-colors">
-            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-            </div>
-            <div class="flex flex-col overflow-hidden">
-                <h1 class="text-sm font-semibold truncate">{{ Auth::user()->name }}</h1>
-                <p class="text-xs text-slate-500">Odontólogo</p>
-            </div>
-        </a>
-
-        <nav class="flex-1 px-4 space-y-1">
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-                {{ request()->routeIs('odontologo.dashboard') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
-                href="{{ route('odontologo.dashboard') }}">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="text-sm">Dashboard</span>
-            </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-                {{ request()->routeIs('odontologo.pacientes.*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
-                href="{{ route('odontologo.pacientes.index') }}">
-                <span class="material-symbols-outlined">group</span>
-                <span class="text-sm">Pacientes</span>
-            </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-                {{ request()->routeIs('odontologo.agenda') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
-                href="{{ route('odontologo.agenda') }}">
-                <span class="material-symbols-outlined">calendar_today</span>
-                <span class="text-sm">Agenda</span>
-            </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-                {{ request()->routeIs('odontologo.historial*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
-                href="{{ route('odontologo.historial') }}">
-                <span class="material-symbols-outlined">medical_information</span>
-                <span class="text-sm">Historial Clínico</span>
-            </a>
-        </nav>
-
-        <div class="p-4 border-t border-slate-200 mt-auto">
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit"
-                    class="w-full flex items-center justify-center gap-2 bg-blue-500 text-white py-3 rounded-lg font-bold text-sm hover:bg-blue-600 transition-all">
-                    <span class="material-symbols-outlined">logout</span>
-                    <span>Cerrar Sesión</span>
-                </button>
-            </form>
-        </div>
-    </aside>
+    @include('layouts.partials.sidebar-odontologo')
 
     {{-- CONTENIDO PRINCIPAL --}}
     <main class="flex-1 flex flex-col overflow-hidden">
@@ -73,8 +15,10 @@
         <header class="h-16 bg-white border-b border-slate-200 flex items-center px-8">
             <div class="relative w-full max-w-md">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                <input class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none"
-                    placeholder="Buscar paciente, cita o historial..." type="text"/>
+                <input id="buscadorDashboard"
+                    class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none cursor-not-allowed opacity-60"
+                    placeholder="Busca desde Pacientes, Agenda o Historial..."
+                    type="text" disabled/>
             </div>
         </header>
 
@@ -95,7 +39,6 @@
             {{-- MÉTRICAS --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                {{-- Pacientes --}}
                 <a href="{{ route('odontologo.pacientes.index') }}"
                     class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between">
@@ -110,7 +53,6 @@
                     </div>
                 </a>
 
-                {{-- Citas hoy --}}
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
@@ -128,7 +70,6 @@
                     </div>
                 </div>
 
-                {{-- Tratamientos completados este mes --}}
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
@@ -142,7 +83,6 @@
                     </div>
                 </div>
 
-                {{-- Citas totales --}}
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center">
@@ -165,6 +105,7 @@
                 <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                         <h2 class="text-xl font-bold">Agenda de Hoy</h2>
+                        <a class="text-blue-500 text-sm font-semibold hover:underline" href="{{ route('odontologo.agenda') }}">Ver agenda completa</a>
                     </div>
                     @if($citasHoy->count() > 0)
                         <table class="w-full text-left">
@@ -219,12 +160,11 @@
                         <div class="flex items-center justify-between mb-4">
                             <p class="opacity-80 text-sm font-medium">Tratamientos del mes</p>
                             <span class="text-xs font-bold uppercase tracking-wide opacity-70">
-                                {{ ucfirst(\Carbon\Carbon::now()->locale('es')->isoFormat('MMMM YYYY')) }}
+                                {{ strtoupper(\Carbon\Carbon::now()->locale('es')->isoFormat('MMMM YYYY')) }}
                             </span>
                         </div>
                         <h3 class="text-4xl font-black mb-2">{{ $totalTratamientosMes }}</h3>
                         <p class="text-sm opacity-80 mb-6">tratamientos completados este mes</p>
-
                         @if($tratamientosMes->count() > 0)
                             <div class="space-y-2">
                                 @foreach($tratamientosMes->take(4) as $tratamiento => $cantidad)

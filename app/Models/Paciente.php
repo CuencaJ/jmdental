@@ -64,4 +64,8 @@ class Paciente extends Model
             default      => 'bg-slate-100 text-slate-500',
         };
     }
+    public function citas()
+    {
+        return $this->hasMany(Cita::class, 'paciente_id');
+    }
 }

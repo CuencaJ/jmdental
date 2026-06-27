@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Odontologo;
 use App\Http\Controllers\Controller;
 use App\Models\Cita;
 use App\Models\Odontologo;
+use App\Models\Paciente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,5 +39,66 @@ class AgendaController extends Controller
             'pendientes',
             'canceladas'
         ));
+    }
+
+    public function create()
+    {
+        $pacientes = Paciente::with('user')->get();
+        return view('odontologo.odontologo-agendar-cita', compact('pacientes'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'paciente_id' => 'required|exists:pacientes,id',
+            'fecha_hora'  => 'required|date',
+            'motivo'      => 'required|string|max:255',
+            'estado'      => 'required|in:pendiente,confirmada,completada,cancelada',
+            'notas'       => 'nullable|string',
+        ]);
+
+        $odontologo = Odontologo::where('user_id', Auth::id())->first();
+
+        Cita::create([
+            'paciente_id'   => $validated['paciente_id'],
+            'odontologo_id' => $odontologo?->id,
+            'user_id'       => Auth::id(),
+            'fecha_hora'    => $validated['fecha_hora'],
+            'estado'        => $validated['estado'],
+            'motivo'        => $validated['motivo'],
+            'notas'         => $validated['notas'] ?? null,
+        ]);
+
+        return redirect()->route('odontologo.agenda')
+            ->with('mensaje', 'Cita agendada correctamente.');
+    }
+
+    public function updateEstado(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'estado' => 'required|in:pendiente,confirmada,completada,cancelada',
+        ]);
+
+        $cita = Cita::findOrFail($id);
+        $estadoAnterior = $cita->estado;
+        $cita->update(['estado' => $validated['estado']]);
+
+        // Si cambia a completada crear tratamiento automáticamente
+        if ($validated['estado'] === 'completada' && $estadoAnterior !== 'completada') {
+            $yaExiste = \App\Models\Tratamiento::where('cita_id', $cita->id)->exists();
+            if (!$yaExiste) {
+                \App\Models\Tratamiento::create([
+                    'cita_id'           => $cita->id,
+                    'nombre'            => $cita->motivo,
+                    'descripcion'       => null,
+                    'costo'             => 0,
+                    'fecha_tratamiento' => $cita->fecha_hora->toDateString(),
+                    'estado'            => 'en_proceso',
+                    'observaciones'     => null,
+                ]);
+            }
+        }
+
+        return redirect()->route('odontologo.agenda')->with('mensaje', 'Estado actualizado correctamente.');
     }
 }

@@ -27,4 +27,8 @@ class Odontologo extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function citas()
+{
+    return $this->hasMany(Cita::class, 'odontologo_id');
+}
 }
