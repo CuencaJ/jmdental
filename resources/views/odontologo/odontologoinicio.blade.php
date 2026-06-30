@@ -13,13 +13,6 @@
 
         {{-- HEADER --}}
         <header class="h-16 bg-white border-b border-slate-200 flex items-center px-8">
-            <div class="relative w-full max-w-md">
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                <input id="buscadorDashboard"
-                    class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none cursor-not-allowed opacity-60"
-                    placeholder="Busca desde Pacientes, Agenda o Historial..."
-                    type="text" disabled/>
-            </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-8 space-y-8">

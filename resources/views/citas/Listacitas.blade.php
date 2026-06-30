@@ -15,8 +15,8 @@
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
             <div class="relative w-full max-w-md">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                <input class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none"
-                    placeholder="Buscar paciente, cita o historial..." type="text"/>
+                <input id="buscadorCitas" class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none"
+                    placeholder="Buscar por paciente o procedimiento..." type="text"/>
             </div>
         </header>
 
@@ -209,10 +209,21 @@
     function filtrarPorEstado() {
         const estado = document.getElementById('filtroEstado').value;
         document.querySelectorAll('#tablaCitas tbody tr').forEach(row => {
-            if (!row.dataset.estado) return; // no toca la fila de "no hay citas"
+            if (!row.dataset.estado) return;
             row.style.display = (estado === 'todos' || row.dataset.estado === estado)
                 ? 'table-row' : 'none';
         });
     }
+
+    document.getElementById('buscadorCitas').addEventListener('input', function() {
+        const term = this.value.toLowerCase();
+        document.querySelectorAll('#tablaCitas tbody tr').forEach(row => {
+            if (!row.dataset.estado) return;
+            const paciente = row.cells[2]?.innerText.toLowerCase() ?? '';
+            const procedimiento = row.cells[3]?.innerText.toLowerCase() ?? '';
+            row.style.display = (paciente.includes(term) || procedimiento.includes(term))
+                ? 'table-row' : 'none';
+        });
+    });
 </script>
 @endsection
