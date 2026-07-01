@@ -1,148 +1,204 @@
 @extends('layouts.admin')
 
-@section('titulo', 'Dashboard Paciente - JM Dental')
+@section('titulo', 'Mi Panel - JM Dental')
 
 @section('content')
 
-<div class="relative flex min-h-screen w-full flex-col bg-slate-50">
-    <div class="flex h-full grow flex-col">
+<div class="flex h-screen overflow-hidden bg-slate-50">
+
+    @include('layouts.partials.sidebar-paciente')
+
+    {{-- CONTENIDO PRINCIPAL --}}
+    <main class="flex-1 flex flex-col overflow-hidden">
 
         {{-- HEADER --}}
-        <header class="flex items-center justify-between border-b border-slate-200 bg-white px-10 py-3">
-            <div class="flex items-center gap-4 text-blue-500">
-                <span class="material-symbols-outlined text-3xl">dentistry</span>
-                <h2 class="text-slate-900 text-lg font-bold">BrightSmile Dental</h2>
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
+            <div class="relative w-full max-w-md">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                <input class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none"
+                    placeholder="Buscar..." type="text"/>
             </div>
-            <div class="flex flex-1 justify-end gap-8">
-                <div class="hidden md:flex items-center gap-9">
-                    <a class="text-slate-900 text-sm font-medium hover:text-blue-500 transition-colors" href="#">Dashboard</a>
-                    <a class="text-slate-600 text-sm font-medium hover:text-blue-500 transition-colors" href="#">Citas</a>
-                    <a class="text-slate-600 text-sm font-medium hover:text-blue-500 transition-colors" href="#">Tratamientos</a>
-                    <a class="text-slate-600 text-sm font-medium hover:text-blue-500 transition-colors" href="#">Facturación</a>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button class="flex items-center justify-center rounded-lg h-10 bg-slate-100 px-2.5">
-                        <span class="material-symbols-outlined text-xl">notifications</span>
-                    </button>
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="flex items-center justify-center rounded-lg h-10 bg-slate-100 px-2.5 text-slate-700 text-sm font-semibold">
-                            <span class="material-symbols-outlined text-xl">logout</span>
-                        </button>
-                    </form>
-                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                    </div>
-                </div>
+            <div class="flex items-center gap-4">
+                <button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-600">
+                    <span class="material-symbols-outlined">notifications</span>
+                </button>
             </div>
         </header>
 
-        {{-- CONTENIDO --}}
-        <main class="flex-1 px-4 md:px-10 lg:px-40 py-8">
-            <div class="max-w-6xl mx-auto">
+        {{-- DASHBOARD --}}
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
 
-                {{-- BIENVENIDA --}}
-                <div class="flex flex-col gap-2 mb-8">
-                    <h1 class="text-slate-900 text-4xl font-black leading-tight">
+            {{-- BIENVENIDA --}}
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-slate-900">
                         ¡Bienvenido, {{ Auth::user()->name }}!
                     </h1>
-                    <p class="text-slate-500 text-lg">
-                        Es hora de tu chequeo regular. ¡Mantén esa sonrisa saludable!
+                    <p class="text-slate-500 mt-1">
+                        Hoy es {{ ucfirst(\Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY')) }}
                     </p>
                 </div>
+                <a href="{{ route('paciente.citas.create') }}"
+                    class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span>Agendar Cita</span>
+                </a>
+            </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {{-- TARJETAS --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                    {{-- COLUMNA PRINCIPAL --}}
-                    <div class="lg:col-span-2 flex flex-col gap-8">
-
-                        {{-- TARJETA SIN CITAS --}}
-                        <div class="bg-white rounded-xl p-8 shadow-sm border border-slate-100 text-center flex flex-col items-center">
-                            <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
-                                <span class="material-symbols-outlined text-5xl text-blue-300">calendar_today</span>
-                            </div>
-                            <h2 class="text-2xl font-bold text-slate-900 mb-2">No tienes citas agendadas</h2>
-                            <p class="text-slate-500 max-w-md mb-8">
-                                Mantener visitas dentales regulares es clave para una vida de sonrisas saludables. Parece que aún no tienes tu próxima visita reservada.
-                            </p>
-                            <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-xl shadow-lg transition-all flex items-center gap-3">
-                                <span class="material-symbols-outlined">add_circle</span>
-                                Reservar tu próxima cita
-                            </button>
+                {{-- PRÓXIMA CITA --}}
+                <a href="{{ route('paciente.citas') }}"
+                    class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined">calendar_today</span>
                         </div>
-
-                        {{-- TRATAMIENTOS RECIENTES --}}
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <h2 class="text-xl font-bold text-slate-900">Tratamientos Recientes</h2>
-                                <a class="text-blue-500 text-sm font-semibold hover:underline" href="#">Ver historial</a>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
-                                    <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
-                                        <span class="material-symbols-outlined">health_and_safety</span>
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-slate-900">Sin tratamientos</p>
-                                        <p class="text-slate-500 text-xs">No hay tratamientos registrados</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- CONSEJOS --}}
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-900 mb-4">Consejos para una Sonrisa Saludable</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="group cursor-pointer">
-                                    <div class="aspect-video w-full rounded-xl bg-slate-200 overflow-hidden mb-3 flex items-center justify-center">
-                                        <span class="material-symbols-outlined text-5xl text-slate-400">dentistry</span>
-                                    </div>
-                                    <h3 class="font-bold text-slate-900 group-hover:text-blue-500 transition-colors">La manera correcta de usar el hilo dental</h3>
-                                    <p class="text-slate-500 text-sm mt-1">Descubre la técnica que los dentistas recomiendan para la salud de las encías.</p>
-                                </div>
-                                <div class="group cursor-pointer">
-                                    <div class="aspect-video w-full rounded-xl bg-slate-200 overflow-hidden mb-3 flex items-center justify-center">
-                                        <span class="material-symbols-outlined text-5xl text-slate-400">nutrition</span>
-                                    </div>
-                                    <h3 class="font-bold text-slate-900 group-hover:text-blue-500 transition-colors">5 Alimentos para un Esmalte más Fuerte</h3>
-                                    <p class="text-slate-500 text-sm mt-1">Lo que comes importa. Aprende qué bocadillos ayudan a proteger tus dientes.</p>
-                                </div>
-                            </div>
-                        </div>
-
+                        <span class="text-xs bg-blue-50 text-blue-500 font-bold px-2 py-1 rounded-lg">Próxima</span>
                     </div>
+                    <div>
+                        <p class="text-sm text-slate-500">Próxima Cita</p>
+                        @if($proximaCita)
+                            <p class="text-xl font-bold text-slate-900">
+                                {{ $proximaCita->fecha_hora->format('d/m/Y') }}
+                            </p>
+                            <p class="text-xs text-slate-400 mt-1">
+                                {{ $proximaCita->fecha_hora->format('H:i') }} — {{ $proximaCita->odontologo->user->name ?? 'Sin odontólogo' }}
+                            </p>
+                        @else
+                            <p class="text-2xl font-bold text-slate-900">No agendada</p>
+                        @endif
+                    </div>
+                </a>
 
-                    {{-- COLUMNA DERECHA --}}
-                    <div class="flex flex-col gap-8">
-
-                        {{-- SALDO PENDIENTE --}}
-                        <div class="bg-blue-500 rounded-xl p-6 text-white shadow-lg">
-                            <div class="flex justify-between items-center mb-6">
-                                <span class="material-symbols-outlined text-3xl">payments</span>
-                                <span class="text-xs font-bold uppercase tracking-widest opacity-80">Acción Pendiente</span>
-                            </div>
-                            <h3 class="text-sm font-medium opacity-90 mb-1">Saldo Pendiente</h3>
-                            <p class="text-3xl font-black mb-6">$0.00</p>
-                            <button class="w-full bg-white text-blue-500 font-bold py-3 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                                Pagar Ahora
-                                <span class="material-symbols-outlined text-lg">arrow_forward</span>
-                            </button>
+                {{-- TRATAMIENTOS --}}
+                <a href="{{ route('paciente.tratamientos') }}"
+                    class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined">medical_information</span>
                         </div>
+                        <span class="text-xs bg-green-50 text-green-500 font-bold px-2 py-1 rounded-lg">Historial</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500">Tratamientos</p>
+                        <p class="text-2xl font-bold text-slate-900">{{ $totalTratamientos }}</p>
+                    </div>
+                </a>
 
-                        {{-- DOCUMENTOS --}}
-                        <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-                            <h3 class="text-slate-900 font-bold mb-4">Documentos Rápidos</h3>
-                            <div class="space-y-3">
-                                <p class="text-slate-400 text-sm text-center">No hay documentos disponibles.</p>
-                            </div>
+                {{-- ESTADO --}}
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                    <div class="flex items-center justify-between">
+                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined">verified_user</span>
                         </div>
-
+                        <span class="text-xs bg-emerald-50 text-emerald-600 font-bold px-2 py-1 rounded-lg">Estado</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500">Mi Estado</p>
+                        <p class="text-2xl font-bold text-slate-900">
+                            {{ Auth::user()->activo ? 'Activo' : 'Inactivo' }}
+                        </p>
                     </div>
                 </div>
+
             </div>
-        </main>
-    </div>
+
+            {{-- PRÓXIMA CITA DETALLE --}}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h2 class="text-xl font-bold">Mis Próximas Citas</h2>
+                        <a href="{{ route('paciente.citas') }}" class="text-blue-500 text-sm font-semibold hover:underline">
+                            Ver todas
+                        </a>
+                    </div>
+                    @if($proximaCita)
+                        <div class="p-6">
+                            <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-xl">
+                                <div class="w-14 h-14 bg-blue-500 rounded-xl flex flex-col items-center justify-center text-white">
+                                    <span class="text-xs font-bold uppercase">{{ $proximaCita->fecha_hora->format('M') }}</span>
+                                    <span class="text-lg font-black leading-none">{{ $proximaCita->fecha_hora->format('d') }}</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-900">{{ $proximaCita->motivo }}</p>
+                                    <p class="text-sm text-slate-500">
+                                        {{ $proximaCita->fecha_hora->format('H:i') }} —
+                                        {{ $proximaCita->odontologo->user->name ?? 'Sin odontólogo' }}
+                                    </p>
+                                    @php
+                                        $estilo = match($proximaCita->estado) {
+                                            'confirmada' => 'bg-green-100 text-green-700',
+                                            'pendiente'  => 'bg-amber-100 text-amber-700',
+                                            default      => 'bg-slate-100 text-slate-600',
+                                        };
+                                    @endphp
+                                    <span class="px-2 py-1 rounded-full text-xs font-bold {{ $estilo }} mt-1 inline-block">
+                                        {{ ucfirst($proximaCita->estado) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="p-6 text-slate-400 text-sm text-center">
+                            <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="material-symbols-outlined text-blue-300 text-4xl">calendar_today</span>
+                            </div>
+                            <p class="font-semibold text-slate-500">No tienes citas agendadas</p>
+                            <p class="mt-1">Agenda tu próxima visita con nosotros</p>
+                            <a href="{{ route('paciente.citas.create') }}"
+                                class="inline-flex items-center gap-2 mt-4 bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-600 transition-colors">
+                                <span class="material-symbols-outlined text-lg">add_circle</span>
+                                Agendar ahora
+                            </a>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- INFORMACIÓN RÁPIDA --}}
+                <div class="space-y-6">
+                    <div class="bg-blue-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="opacity-80 text-sm">Mi Salud Dental</p>
+                            <h3 class="text-2xl font-bold mt-1">{{ Auth::user()->paciente->tipo_denticion ?? 'No registrado' }}</h3>
+                            <p class="text-xs opacity-70 mt-2">Tipo de dentición</p>
+                            <div class="mt-4 flex items-center gap-2 text-xs font-bold text-emerald-300">
+                                <span class="material-symbols-outlined text-sm">favorite</span>
+                                <span>Tipo de sangre: {{ Auth::user()->paciente->tipo_sangre ?? 'No registrado' }}</span>
+                            </div>
+                        </div>
+                        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h2 class="text-lg font-bold mb-4">Mis Datos</h2>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-slate-400 text-lg">phone</span>
+                                <span class="text-sm text-slate-600">{{ Auth::user()->telefono ?? 'No registrado' }}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-slate-400 text-lg">mail</span>
+                                <span class="text-sm text-slate-600">{{ Auth::user()->email }}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-slate-400 text-lg">location_on</span>
+                                <span class="text-sm text-slate-600">{{ Auth::user()->paciente->direccion ?? 'No registrada' }}</span>
+                            </div>
+                        </div>
+                        <a href="{{ route('paciente.perfil') }}"
+                            class="w-full mt-4 flex items-center justify-center gap-2 border border-slate-200 text-slate-600 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined text-lg">edit</span>
+                            Editar mi perfil
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
 </div>
 
 @endsection

@@ -24,7 +24,7 @@
             {{ request()->routeIs('odontologo.dashboard') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
             href="{{ route('odontologo.dashboard') }}">
             <span class="material-symbols-outlined">dashboard</span>
-            <span class="text-sm">Dashboard</span>
+            <span class="text-sm">Inicio</span>
         </a>
         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
             {{ request()->routeIs('odontologo.pacientes.*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"

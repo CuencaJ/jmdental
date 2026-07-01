@@ -5,41 +5,47 @@
         </div>
         <h2 class="text-xl font-bold text-slate-900">DentalCare</h2>
     </div>
-    <div class="flex items-center gap-3 p-3 mx-4 bg-slate-50 rounded-xl mb-4">
+
+    {{-- PERFIL CLICKEABLE --}}
+    <a href="{{ route('paciente.perfil') }}"
+        class="flex items-center gap-3 p-3 mx-4 bg-slate-50 rounded-xl mb-4 hover:bg-blue-50 transition-colors
+        {{ request()->routeIs('paciente.perfil') ? 'bg-blue-50 ring-2 ring-blue-200' : '' }}">
         <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
         </div>
         <div class="flex flex-col overflow-hidden">
             <h1 class="text-sm font-semibold truncate">{{ Auth::user()->name }}</h1>
-            <p class="text-xs text-slate-500">{{ ucfirst(Auth::user()->roles->first()->name ?? '') }}</p>
+            <p class="text-xs text-slate-500">Paciente</p>
         </div>
-    </div>
+    </a>
+
     <nav class="flex-1 px-4 space-y-1">
         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-            {{ request()->routeIs('admin.dashboard') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
-            href="{{ route('admin.dashboard') }}">
+            {{ request()->routeIs('paciente.dashboard') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+            href="{{ route('paciente.dashboard') }}">
             <span class="material-symbols-outlined">dashboard</span>
             <span class="text-sm">Inicio</span>
         </a>
         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-            {{ request()->routeIs('admin.usuarios.*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
-            href="{{ route('admin.usuarios.index') }}">
-            <span class="material-symbols-outlined">group</span>
-            <span class="text-sm">Usuarios</span>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-            {{ request()->routeIs('admin.citas.*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
-            href="{{ route('admin.citas.index') }}">
+            {{ request()->routeIs('paciente.citas*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+            href="{{ route('paciente.citas') }}">
             <span class="material-symbols-outlined">calendar_month</span>
-            <span class="text-sm">Citas</span>
+            <span class="text-sm">Mis Citas</span>
         </a>
         <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
-            {{ request()->routeIs('admin.reportes.*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
-            href="{{ route('admin.reportes.tratamientos') }}">
-            <span class="material-symbols-outlined">description</span>
-            <span class="text-sm">Reportes</span>
+            {{ request()->routeIs('paciente.tratamientos*') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+            href="{{ route('paciente.tratamientos') }}">
+            <span class="material-symbols-outlined">medical_information</span>
+            <span class="text-sm">Mis Tratamientos</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+            {{ request()->routeIs('paciente.perfil') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+            href="{{ route('paciente.perfil') }}">
+            <span class="material-symbols-outlined">person</span>
+            <span class="text-sm">Mi Perfil</span>
         </a>
     </nav>
+
     <div class="p-4 border-t border-slate-200 mt-auto">
         <form action="{{ route('logout') }}" method="POST">
             @csrf

@@ -29,32 +29,22 @@
                 </div>
             @endif
 
-            {{-- DOCTORA + FILTRO FECHA --}}
-            @if($odontologo)
-                <div class="flex items-center justify-between flex-wrap gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                            {{ strtoupper(substr($odontologo->user->name, 0, 2)) }}
-                        </div>
-                        <div>
-                            <h1 class="text-sm font-semibold text-slate-900">{{ $odontologo->user->name }}</h1>
-                            <p class="text-xs text-slate-400">{{ $odontologo->especialidad ?? 'Odontóloga general' }}</p>
-                        </div>
-                    </div>
-                    <form method="GET" action="{{ route('admin.citas.index') }}" class="flex items-center gap-2">
-                        <label class="text-sm text-slate-500 font-medium">Filtrar por fecha:</label>
-                        <input type="date" name="fecha" value="{{ $fechaFiltro }}"
-                            onchange="this.form.submit()"
-                            class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-blue-400 cursor-pointer">
-                        @if($fechaFiltro)
-                            <a href="{{ route('admin.citas.index') }}"
-                                class="text-xs text-slate-400 hover:text-red-500 font-medium transition-colors">
-                                Limpiar
-                            </a>
-                        @endif
-                    </form>
-                </div>
-            @endif
+            {{-- TÍTULO Y FILTRO FECHA --}}
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <h1 class="text-xl font-bold text-slate-900">Gestión de Citas</h1>
+                <form method="GET" action="{{ route('admin.citas.index') }}" class="flex items-center gap-2">
+                    <label class="text-sm text-slate-500 font-medium">Filtrar por fecha:</label>
+                    <input type="date" name="fecha" value="{{ $fechaFiltro }}"
+                        onchange="this.form.submit()"
+                        class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-blue-400 cursor-pointer">
+                    @if($fechaFiltro)
+                        <a href="{{ route('admin.citas.index') }}"
+                            class="text-xs text-slate-400 hover:text-red-500 font-medium transition-colors">
+                            Limpiar
+                        </a>
+                    @endif
+                </form>
+            </div>
 
             {{-- FILTROS Y ACCIONES --}}
             <div class="flex flex-wrap items-center justify-between gap-4">
@@ -99,6 +89,7 @@
                             <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Fecha</th>
                             <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Hora</th>
                             <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Paciente</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Odontólogo</th>
                             <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Procedimiento</th>
                             <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Estado</th>
                         </tr>
@@ -116,16 +107,19 @@
                                     {{ $cita->paciente->user->name ?? 'Paciente eliminado' }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-500">
+                                    {{ $cita->odontologo->user->name ?? 'No asignado' }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-slate-500">
                                     {{ $cita->motivo }}
                                 </td>
                                 <td class="px-6 py-4">
                                     @php
                                         $estiloEstado = match($cita->estado) {
                                             'confirmada' => 'bg-green-100 text-green-700',
-                                            'pendiente' => 'bg-amber-100 text-amber-700',
+                                            'pendiente'  => 'bg-amber-100 text-amber-700',
                                             'completada' => 'bg-blue-100 text-blue-700',
-                                            'cancelada' => 'bg-red-100 text-red-700',
-                                            default => 'bg-slate-100 text-slate-600',
+                                            'cancelada'  => 'bg-red-100 text-red-700',
+                                            default      => 'bg-slate-100 text-slate-600',
                                         };
                                     @endphp
                                     <form action="{{ route('admin.citas.estado', $cita->id) }}" method="POST"
@@ -144,7 +138,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-16">
+                                <td colspan="6" class="px-6 py-16">
                                     <div class="flex flex-col items-center text-center">
                                         <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-3">
                                             <span class="material-symbols-outlined text-blue-300 text-2xl">calendar_today</span>
@@ -220,7 +214,7 @@
         document.querySelectorAll('#tablaCitas tbody tr').forEach(row => {
             if (!row.dataset.estado) return;
             const paciente = row.cells[2]?.innerText.toLowerCase() ?? '';
-            const procedimiento = row.cells[3]?.innerText.toLowerCase() ?? '';
+            const procedimiento = row.cells[4]?.innerText.toLowerCase() ?? '';
             row.style.display = (paciente.includes(term) || procedimiento.includes(term))
                 ? 'table-row' : 'none';
         });

@@ -13,6 +13,11 @@
 
         {{-- HEADER --}}
         <header class="h-16 bg-white border-b border-slate-200 flex items-center px-8">
+            <div class="relative w-full max-w-md">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                <input class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none"
+                    placeholder="Buscar paciente, cita o historial..." type="text"/>
+            </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-8 space-y-8">
@@ -32,6 +37,7 @@
             {{-- MÉTRICAS --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
+                {{-- Pacientes --}}
                 <a href="{{ route('odontologo.pacientes.index') }}"
                     class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between">
@@ -46,7 +52,9 @@
                     </div>
                 </a>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                {{-- Citas hoy --}}
+                <a href="{{ route('odontologo.agenda') }}?fecha={{ \Carbon\Carbon::today()->format('Y-m-d') }}"
+                    class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
                             <span class="material-symbols-outlined">calendar_today</span>
@@ -61,8 +69,9 @@
                         <span class="text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full">{{ $citasHoyConfirmadas }} confirmadas</span>
                         <span class="text-xs bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full">{{ $citasHoyPendientes }} pendientes</span>
                     </div>
-                </div>
+                </a>
 
+                {{-- Tratamientos completados este mes --}}
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
@@ -76,18 +85,20 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                {{-- Citas pendientes --}}
+                <a href="{{ route('odontologo.agenda') }}?estado=pendiente"
+                    class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center">
                             <span class="material-symbols-outlined">event_note</span>
                         </div>
-                        <span class="text-xs bg-violet-50 text-violet-600 font-bold px-2 py-1 rounded-lg">Total</span>
+                        <span class="text-xs bg-violet-50 text-violet-600 font-bold px-2 py-1 rounded-lg">Pendientes</span>
                     </div>
                     <div>
-                        <p class="text-2xl font-bold text-slate-900">{{ $totalCitas }}</p>
-                        <p class="text-xs text-slate-400 mt-0.5">citas en el sistema</p>
+                        <p class="text-2xl font-bold text-slate-900">{{ $totalCitasPendientes }}</p>
+                        <p class="text-xs text-slate-400 mt-0.5">citas pendientes de atender</p>
                     </div>
-                </div>
+                </a>
 
             </div>
 

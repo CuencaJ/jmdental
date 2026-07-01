@@ -43,7 +43,8 @@
                             class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
                             <option value="">Selecciona un paciente</option>
                             @foreach($pacientes as $paciente)
-                                <option value="{{ $paciente->id }}" {{ old('paciente_id') == $paciente->id ? 'selected' : '' }}>
+                                <option value="{{ $paciente->id }}"
+                                    {{ (old('paciente_id') ?? request('paciente_id')) == $paciente->id ? 'selected' : '' }}>
                                     {{ $paciente->user->name }}
                                 </option>
                             @endforeach

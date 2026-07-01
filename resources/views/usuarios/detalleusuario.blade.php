@@ -87,7 +87,7 @@
                     </a>
 
                     {{-- Agendar Cita --}}
-                    <a href="{{ route('odontologo.citas.create') }}"
+                    <a href="{{ route('odontologo.citas.create', ['paciente_id' => $usuario->paciente->id ?? '']) }}"
                         class="flex items-center gap-2 bg-blue-500 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20">
                         <span class="material-symbols-outlined">calendar_add_on</span>
                         Agendar Cita
