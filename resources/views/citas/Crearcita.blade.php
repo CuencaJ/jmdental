@@ -8,10 +8,8 @@
 
     @include('layouts.partials.sidebar-admin')
 
-    {{-- CONTENIDO PRINCIPAL --}}
     <main class="flex-1 flex flex-col overflow-hidden">
 
-        {{-- HEADER --}}
         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
             <div class="relative w-full max-w-md">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -58,22 +56,34 @@
                         </select>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Fecha y hora</label>
-                            <input type="datetime-local" name="fecha_hora" required value="{{ old('fecha_hora') }}"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Estado</label>
-                            <select name="estado" required
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
-                                <option value="pendiente" {{ old('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                <option value="confirmada" {{ old('estado') == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
-                                <option value="completada" {{ old('estado') == 'completada' ? 'selected' : '' }}>Completada</option>
-                                <option value="cancelada" {{ old('estado') == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
-                            </select>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Odontólogo</label>
+                        <select name="odontologo_id" id="select-odontologo" required
+                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                            onchange="actualizarOdontologoSlots()">
+                            <option value="">Selecciona un odontólogo</option>
+                            @foreach($odontologos as $od)
+                                <option value="{{ $od->id }}" {{ old('odontologo_id') == $od->id ? 'selected' : '' }}>
+                                    {{ $od->user->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- SELECTOR FECHA/HORA CON SLOTS --}}
+                    @include('layouts.partials.selector-fecha-hora', [
+                        'odontologo_id' => old('odontologo_id', $odontologo?->id ?? ''),
+                    ])
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Estado</label>
+                        <select name="estado" required
+                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                            <option value="pendiente" {{ old('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                            <option value="confirmada" {{ old('estado') == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
+                            <option value="completada" {{ old('estado') == 'completada' ? 'selected' : '' }}>Completada</option>
+                            <option value="cancelada" {{ old('estado') == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
+                        </select>
                     </div>
 
                     <div>
@@ -105,5 +115,19 @@
         </div>
     </main>
 </div>
+
+<script>
+function actualizarOdontologoSlots() {
+    const select = document.getElementById('select-odontologo');
+    const odontologoId = select.value;
+    const campoFecha = document.getElementById('campo-fecha');
+
+    window._odontologoId = odontologoId;
+
+    if (campoFecha && campoFecha.value) {
+        campoFecha.dispatchEvent(new Event('change'));
+    }
+}
+</script>
 
 @endsection

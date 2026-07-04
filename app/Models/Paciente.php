@@ -68,4 +68,8 @@ class Paciente extends Model
     {
         return $this->hasMany(Cita::class, 'paciente_id');
     }
+    public function historiaClinica()
+    {
+        return $this->hasOne(HistoriaClinica::class);
+    }
 }

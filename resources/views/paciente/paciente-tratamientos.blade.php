@@ -104,7 +104,8 @@
                                                 title="Ver detalle">
                                                 <span class="material-symbols-outlined text-xl">visibility</span>
                                             </button>
-                                            <a href="#"
+                                            <a href="{{ route('paciente.tratamientos.pdf', $tratamiento->id) }}"
+                                                target="_blank"
                                                 class="p-2 text-slate-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-all"
                                                 title="Descargar historial">
                                                 <span class="material-symbols-outlined text-xl">download</span>
@@ -159,62 +160,70 @@
     </div>
 </div>
 
+@php
+$piezasJson = collect($tratamientos)->mapWithKeys(function($t) {
+    return [$t->id => $t->piezas->map(function($p) {
+        return [
+            'pieza_numero' => $p->pieza_numero,
+            'cara'         => $p->cara,
+            'procedimiento'=> $p->procedimiento,
+            'ausente'      => $p->ausente,
+        ];
+    })->values()->toArray()];
+});
+@endphp
+
 @endsection
 
 @section('scripts')
 <script>
-    const tratamientos = @json($datosTratamientos);
+const tratamientos = @json($datosTratamientos);
+const piezasPorTratamiento = @json($piezasJson);
 
-    function verDetalle(id) {
-        const t = tratamientos.find(t => t.id === id);
-        if (!t) return;
+function verDetalle(id) {
+    const t = tratamientos.find(t => t.id === id);
+    if (!t) return;
 
-        document.getElementById('contenidoModal').innerHTML = `
-            <div class="space-y-3">
-                <div class="flex justify-between py-2 border-b border-slate-100">
-                    <span class="text-xs font-bold uppercase text-slate-400">Tratamiento</span>
-                    <span class="text-sm font-bold text-slate-900">${t.nombre}</span>
-                </div>
-                <div class="flex justify-between py-2 border-b border-slate-100">
-                    <span class="text-xs font-bold uppercase text-slate-400">Descripción</span>
-                    <span class="text-sm text-slate-900 text-right max-w-xs">${t.descripcion}</span>
-                </div>
-                <div class="flex justify-between py-2 border-b border-slate-100">
-                    <span class="text-xs font-bold uppercase text-slate-400">Fecha</span>
-                    <span class="text-sm text-slate-900">${t.fecha}</span>
-                </div>
-                <div class="flex justify-between py-2 border-b border-slate-100">
-                    <span class="text-xs font-bold uppercase text-slate-400">Odontólogo</span>
-                    <span class="text-sm text-slate-900">${t.odontologo}</span>
-                </div>
-                <div class="flex justify-between py-2 border-b border-slate-100">
-                    <span class="text-xs font-bold uppercase text-slate-400">Estado</span>
-                    <span class="text-sm text-slate-900">${t.estado}</span>
-                </div>
-                <div class="flex justify-between py-2 border-b border-slate-100">
-                    <span class="text-xs font-bold uppercase text-slate-400">Costo</span>
-                    <span class="text-sm font-bold text-slate-900">$${t.costo}</span>
-                </div>
-                <div class="flex justify-between py-2">
-                    <span class="text-xs font-bold uppercase text-slate-400">Observaciones</span>
-                    <span class="text-sm text-slate-900 text-right max-w-xs">${t.observaciones}</span>
-                </div>
-            </div>
-        `;
-
-        const modal = document.getElementById('modalDetalle');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+    const piezasData = piezasPorTratamiento[id] ?? [];
+    let piezasHtml = '';
+    if (piezasData.length > 0) {
+        const tags = piezasData.map(function(p) {
+            let label = 'Pieza ' + p.pieza_numero;
+            if (p.cara) label += ' · ' + p.cara;
+            if (p.procedimiento) label += ' · ' + p.procedimiento;
+            if (p.ausente) label += ' · Ausente';
+            return '<span style="display:inline-block;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:3px 10px;font-size:11px;color:#1d4ed8;margin:3px;">' + label + '</span>';
+        }).join('');
+        piezasHtml = '<div style="border-top:1px solid #f1f5f9;padding-top:12px;margin-top:8px;">'
+            + '<span style="font-size:10px;font-weight:700;text-transform:uppercase;color:#94a3b8;">Piezas trabajadas</span>'
+            + '<div style="margin-top:6px;">' + tags + '</div></div>';
     }
 
-    function cerrarModal() {
-        const modal = document.getElementById('modalDetalle');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
+    document.getElementById('contenidoModal').innerHTML =
+        '<div class="space-y-3">'
+        + '<div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs font-bold uppercase text-slate-400">Tratamiento</span><span class="text-sm font-bold text-slate-900">' + t.nombre + '</span></div>'
+        + '<div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs font-bold uppercase text-slate-400">Descripción</span><span class="text-sm text-slate-900 text-right max-w-xs">' + t.descripcion + '</span></div>'
+        + '<div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs font-bold uppercase text-slate-400">Fecha</span><span class="text-sm text-slate-900">' + t.fecha + '</span></div>'
+        + '<div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs font-bold uppercase text-slate-400">Odontólogo</span><span class="text-sm text-slate-900">' + t.odontologo + '</span></div>'
+        + '<div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs font-bold uppercase text-slate-400">Estado</span><span class="text-sm text-slate-900">' + t.estado + '</span></div>'
+        + '<div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs font-bold uppercase text-slate-400">Costo</span><span class="text-sm font-bold text-slate-900">$' + t.costo + '</span></div>'
+        + '<div class="flex justify-between py-2' + (piezasHtml ? ' border-b border-slate-100' : '') + '"><span class="text-xs font-bold uppercase text-slate-400">Observaciones</span><span class="text-sm text-slate-900 text-right max-w-xs">' + t.observaciones + '</span></div>'
+        + piezasHtml
+        + '</div>';
 
-    document.getElementById('modalDetalle').addEventListener('click', function(e) {
-        if (e.target === this) cerrarModal();
-    });
+    const modal = document.getElementById('modalDetalle');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function cerrarModal() {
+    const modal = document.getElementById('modalDetalle');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+document.getElementById('modalDetalle').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+});
 </script>
 @endsection

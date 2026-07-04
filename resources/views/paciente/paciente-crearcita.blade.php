@@ -8,10 +8,8 @@
 
     @include('layouts.partials.sidebar-paciente')
 
-    {{-- CONTENIDO PRINCIPAL --}}
     <main class="flex-1 flex flex-col overflow-hidden">
 
-        {{-- HEADER --}}
         <header class="h-16 bg-white border-b border-slate-200 flex items-center gap-3 px-8">
             <a href="{{ route('paciente.citas') }}" class="text-slate-400 hover:text-slate-600">
                 <span class="material-symbols-outlined">arrow_back</span>
@@ -19,12 +17,10 @@
             <h1 class="text-xl font-bold text-slate-900">Agendar Nueva Cita</h1>
         </header>
 
-        {{-- FORMULARIO --}}
         <div class="flex-1 overflow-y-auto p-8">
             <div class="max-w-xl mx-auto">
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
 
-                    {{-- ERRORES --}}
                     @if($errors->any())
                         <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
                             <ul class="list-disc list-inside space-y-1">
@@ -43,26 +39,22 @@
                             <label class="block text-sm font-semibold text-slate-700 mb-2">
                                 Selecciona un odontólogo
                             </label>
-                            <select name="odontologo_id"
-                                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500" required>
+                            <select name="odontologo_id" id="select-odontologo"
+                                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                required onchange="actualizarOdontologoSlots()">
                                 <option value="">Selecciona un odontólogo</option>
-                                @foreach($odontologos as $odontologo)
-                                    <option value="{{ $odontologo->id }}" {{ old('odontologo_id') == $odontologo->id ? 'selected' : '' }}>
-                                        {{ $odontologo->user->name }} — {{ $odontologo->especialidad ?? 'Odontología general' }}
+                                @foreach($odontologos as $od)
+                                    <option value="{{ $od->id }}" {{ old('odontologo_id') == $od->id ? 'selected' : '' }}>
+                                        {{ $od->user->name }} — {{ $od->especialidad ?? 'Odontología general' }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
-                        {{-- FECHA Y HORA --}}
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">
-                                Fecha y hora
-                            </label>
-                            <input type="datetime-local" name="fecha_hora" value="{{ old('fecha_hora') }}"
-                                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                                required>
-                        </div>
+                        {{-- SELECTOR FECHA/HORA CON SLOTS --}}
+                        @include('layouts.partials.selector-fecha-hora', [
+                            'odontologo_id' => old('odontologo_id', $odontologo?->id ?? ''),
+                        ])
 
                         {{-- MOTIVO --}}
                         <div>
@@ -71,10 +63,10 @@
                             </label>
                             <textarea name="motivo" rows="3"
                                 class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-                                placeholder="Ej: Revisión general, dolor de muela, limpieza dental..." required>{{ old('motivo') }}</textarea>
+                                placeholder="Ej: Revisión general, dolor de muela, limpieza dental..."
+                                required>{{ old('motivo') }}</textarea>
                         </div>
 
-                        {{-- BOTONES --}}
                         <div class="flex gap-4 pt-4">
                             <button type="submit"
                                 class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors">
@@ -93,4 +85,18 @@
     </main>
 </div>
 
-@endsection
+<script>
+function actualizarOdontologoSlots() {
+    const select = document.getElementById('select-odontologo');
+    const odontologoId = select.value;
+    const campoFecha = document.getElementById('campo-fecha');
+
+    // Actualizar la URL del fetch con el nuevo odontólogo
+    window._odontologoId = odontologoId;
+
+    // Si ya hay fecha seleccionada, recargar slots
+    if (campoFecha && campoFecha.value) {
+        campoFecha.dispatchEvent(new Event('change'));
+    }
+}
+</script>

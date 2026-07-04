@@ -12,13 +12,19 @@
     <main class="flex-1 flex flex-col overflow-hidden">
 
         {{-- HEADER --}}
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center px-8">
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center px-8 gap-4">
             <div class="relative w-full max-w-md">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                 <input class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none"
                     placeholder="Buscar paciente, cita o historial..." type="text"/>
             </div>
+            <a href="{{ route('odontologo.semana') }}"
+                class="ml-auto flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap">
+                <span class="material-symbols-outlined text-base">calendar_view_week</span>
+                Preparar semana
+            </a>
         </header>
+
 
         <div class="flex-1 overflow-y-auto p-8 space-y-8">
 

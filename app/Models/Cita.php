@@ -19,6 +19,7 @@ class Cita extends Model
         'estado',
         'motivo',
         'notas',
+        'duracion_minutos',
     ];
 
     protected $casts = [

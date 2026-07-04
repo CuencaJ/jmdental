@@ -51,22 +51,20 @@
                         </select>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Fecha y hora</label>
-                            <input type="datetime-local" name="fecha_hora" required value="{{ old('fecha_hora') }}"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Estado</label>
-                            <select name="estado" required
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
-                                <option value="pendiente" {{ old('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                <option value="confirmada" {{ old('estado') == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
-                                <option value="completada" {{ old('estado') == 'completada' ? 'selected' : '' }}>Completada</option>
-                                <option value="cancelada" {{ old('estado') == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
-                            </select>
-                        </div>
+                    {{-- SELECTOR FECHA/HORA CON SLOTS DISPONIBLES --}}
+                    @include('layouts.partials.selector-fecha-hora', [
+                        'odontologo_id' => $odontologo?->id ?? '',
+                    ])
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Estado</label>
+                        <select name="estado" required
+                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                            <option value="pendiente" {{ old('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                            <option value="confirmada" {{ old('estado') == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
+                            <option value="completada" {{ old('estado') == 'completada' ? 'selected' : '' }}>Completada</option>
+                            <option value="cancelada" {{ old('estado') == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
+                        </select>
                     </div>
 
                     <div>
@@ -93,7 +91,6 @@
                         </button>
                     </div>
                 </form>
-
             </div>
         </div>
     </main>
