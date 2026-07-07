@@ -51,9 +51,16 @@
                             <div>
                                 <h2 class="text-xl font-bold text-slate-900">{{ $usuario->name }}</h2>
                                 <p class="text-sm text-slate-500">{{ $usuario->email }}</p>
-                                <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 mt-1 inline-block">
-                                    Paciente
-                                </span>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700">
+                                        Paciente
+                                    </span>
+                                    @if($usuario->paciente && $usuario->paciente->fecha_nacimiento)
+                                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                                            {{ $usuario->paciente->edad }} años
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -87,10 +94,22 @@
                                     maxlength="10">
                             </div>
                             <div>
-                                <label class="block text-sm text-slate-500 mb-1">Fecha de nacimiento</label>
-                                <input type="date" name="fecha_nacimiento"
+                                <label class="block text-sm text-slate-500 mb-1">
+                                    Fecha de nacimiento
+                                    @if($usuario->paciente && $usuario->paciente->fecha_nacimiento)
+                                        <span class="text-blue-500 font-bold text-xs">
+                                            ({{ $usuario->paciente->edad }} años)
+                                        </span>
+                                    @endif
+                                </label>
+                                <input type="date" name="fecha_nacimiento" id="fecha_nacimiento"
                                     value="{{ old('fecha_nacimiento', $usuario->paciente->fecha_nacimiento ? $usuario->paciente->fecha_nacimiento->format('Y-m-d') : '') }}"
-                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    onchange="calcularEdad()">
+                                <div id="infoEdad" class="mt-1 hidden">
+                                    <span class="text-xs text-slate-500">Edad: </span>
+                                    <span id="edadTexto" class="text-xs font-bold text-blue-500"></span>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm text-slate-500 mb-1">Tipo de sangre</label>
@@ -181,4 +200,36 @@
     </main>
 </div>
 
+@endsection
+
+@section('scripts')
+<script>
+    function calcularEdad() {
+        const fechaInput = document.getElementById('fecha_nacimiento');
+        const infoEdad = document.getElementById('infoEdad');
+        const edadTexto = document.getElementById('edadTexto');
+
+        if (!fechaInput.value) {
+            infoEdad.classList.add('hidden');
+            return;
+        }
+
+        const hoy = new Date();
+        const nacimiento = new Date(fechaInput.value);
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+            edad--;
+        }
+
+        edadTexto.textContent = edad + ' años';
+        infoEdad.classList.remove('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('fecha_nacimiento').value) {
+            calcularEdad();
+        }
+    });
+</script>
 @endsection

@@ -90,6 +90,7 @@
                                 <option value="Otro" {{ old('genero') == 'Otro' ? 'selected' : '' }}>Otro</option>
                             </select>
                         </div>
+
                         {{-- EMAIL --}}
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-2">
@@ -141,8 +142,17 @@
                             {{-- FECHA NACIMIENTO --}}
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha de nacimiento</label>
-                                <input type="date" name="fecha_nacimiento" value="{{ old('fecha_nacimiento') }}"
-                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                                <input type="date" name="fecha_nacimiento" id="fecha_nacimiento"
+                                    value="{{ old('fecha_nacimiento') }}"
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                                    onchange="calcularEdad()">
+                                <div id="infoEdad" class="mt-2 hidden flex items-center gap-2">
+                                    <span class="text-sm text-slate-500">Edad:</span>
+                                    <span id="edadTexto" class="text-sm font-bold text-slate-900"></span>
+                                    <span class="text-slate-300 mx-1">|</span>
+                                    <span class="text-sm text-slate-500">Dentición:</span>
+                                    <span id="denticionTexto" class="text-xs font-bold px-2 py-1 rounded-full"></span>
+                                </div>
                             </div>
 
                             {{-- DIRECCIÓN --}}
@@ -261,6 +271,7 @@
 
 @section('scripts')
 <script>
+    // Toggle campos paciente
     const selectRol = document.getElementById('selectRol');
     const camposPaciente = document.getElementById('camposPaciente');
 
@@ -274,5 +285,51 @@
 
     toggleCamposPaciente();
     selectRol.addEventListener('change', toggleCamposPaciente);
+
+    // Calcular edad y tipo de dentición
+    function calcularEdad() {
+        const fechaInput = document.getElementById('fecha_nacimiento');
+        const infoEdad = document.getElementById('infoEdad');
+        const edadTexto = document.getElementById('edadTexto');
+        const denticionTexto = document.getElementById('denticionTexto');
+
+        if (!fechaInput.value) {
+            infoEdad.classList.add('hidden');
+            return;
+        }
+
+        const hoy = new Date();
+        const nacimiento = new Date(fechaInput.value);
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+            edad--;
+        }
+
+        edadTexto.textContent = edad + ' años';
+
+        let tipo, color;
+        if (edad < 6) {
+            tipo = 'Temporal';
+            color = 'bg-yellow-100 text-yellow-700';
+        } else if (edad < 13) {
+            tipo = 'Mixta';
+            color = 'bg-orange-100 text-orange-700';
+        } else {
+            tipo = 'Permanente';
+            color = 'bg-green-100 text-green-700';
+        }
+
+        denticionTexto.textContent = tipo;
+        denticionTexto.className = 'text-xs font-bold px-2 py-1 rounded-full ' + color;
+        infoEdad.classList.remove('hidden');
+    }
+
+    // Calcular al cargar si hay old value
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('fecha_nacimiento').value) {
+            calcularEdad();
+        }
+    });
 </script>
 @endsection

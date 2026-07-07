@@ -6,7 +6,11 @@
 
 <div class="flex h-screen overflow-hidden bg-slate-50">
 
-    @include('layouts.partials.sidebar-admin')
+    @if(Auth::user()->hasRole('administrador'))
+        @include('layouts.partials.sidebar-admin')
+    @elseif(Auth::user()->hasRole('recepcionista'))
+        @include('layouts.partials.sidebar-recepcionista')
+    @endif
 
     {{-- CONTENIDO PRINCIPAL --}}
     <main class="flex-1 flex flex-col overflow-hidden">
@@ -32,13 +36,15 @@
             {{-- TÍTULO Y FILTRO FECHA --}}
             <div class="flex items-center justify-between flex-wrap gap-4">
                 <h1 class="text-xl font-bold text-slate-900">Gestión de Citas</h1>
-                <form method="GET" action="{{ route('admin.citas.index') }}" class="flex items-center gap-2">
+                <form method="GET"
+                    action="{{ Auth::user()->hasRole('administrador') ? route('admin.citas.index') : route('recepcionista.citas') }}"
+                    class="flex items-center gap-2">
                     <label class="text-sm text-slate-500 font-medium">Filtrar por fecha:</label>
                     <input type="date" name="fecha" value="{{ $fechaFiltro }}"
                         onchange="this.form.submit()"
                         class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 outline-none focus:border-blue-400 cursor-pointer">
                     @if($fechaFiltro)
-                        <a href="{{ route('admin.citas.index') }}"
+                        <a href="{{ Auth::user()->hasRole('administrador') ? route('admin.citas.index') : route('recepcionista.citas') }}"
                             class="text-xs text-slate-400 hover:text-red-500 font-medium transition-colors">
                             Limpiar
                         </a>
@@ -74,7 +80,7 @@
                         Canceladas
                     </span>
                 </div>
-                <a href="{{ route('admin.citas.create') }}"
+                <a href="{{ Auth::user()->hasRole('administrador') ? route('admin.citas.create') : route('recepcionista.citas.create') }}"
                     class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
                     <span class="material-symbols-outlined text-base">add</span>
                     Agregar cita
@@ -121,8 +127,11 @@
                                             'cancelada'  => 'bg-red-100 text-red-700',
                                             default      => 'bg-slate-100 text-slate-600',
                                         };
+                                        $rutaEstado = Auth::user()->hasRole('administrador')
+                                            ? route('admin.citas.estado', $cita->id)
+                                            : route('recepcionista.citas.estado', $cita->id);
                                     @endphp
-                                    <form action="{{ route('admin.citas.estado', $cita->id) }}" method="POST"
+                                    <form action="{{ $rutaEstado }}" method="POST"
                                         onchange="this.submit()" class="inline-block">
                                         @csrf
                                         @method('PATCH')

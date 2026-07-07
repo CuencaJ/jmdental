@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Citas;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cita;
-use App\Models\ConfiguracionHorario;
 use App\Models\Odontologo;
 use App\Models\Paciente;
 use App\Models\Tratamiento;
-use App\Services\HorarioDisponibilidadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,27 +33,15 @@ class CitaController extends Controller
 
     public function createAdmin()
     {
-        $pacientes   = Paciente::with('user')->get();
+        $pacientes = Paciente::with('user')->get();
         $odontologos = Odontologo::with('user')->get();
-        $odontologo  = $odontologos->first(); // para el partial de slots
 
-        return view('citas.crearcita', compact('pacientes', 'odontologos', 'odontologo'));
+        return view('citas.crearcita', compact('pacientes', 'odontologos'));
     }
 
     public function storeAdmin(Request $request)
     {
         $validated = $this->validarCita($request, true);
-
-        // Validar que el slot siga disponible
-        $service = new HorarioDisponibilidadService();
-        $fecha   = date('Y-m-d', strtotime($validated['fecha_hora']));
-        $hora    = date('H:i', strtotime($validated['fecha_hora']));
-        $slots   = $service->getSlotsDisponibles($fecha, $validated['odontologo_id']);
-
-        if (!in_array($hora, $slots)) {
-            return back()->withErrors(['fecha_hora' => 'El horario seleccionado ya no está disponible.'])->withInput();
-        }
-
         $this->crearCita($validated, $validated['odontologo_id'], Auth::id());
 
         return redirect()->route('admin.citas.index')
@@ -68,7 +54,7 @@ class CitaController extends Controller
 
     public function indexOdontologo(Request $request)
     {
-        $odontologo  = Odontologo::where('user_id', Auth::id())->first();
+        $odontologo = Odontologo::where('user_id', Auth::id())->first();
         $fechaFiltro = $request->get('fecha');
 
         $citas = Cita::with('paciente.user')
@@ -85,30 +71,56 @@ class CitaController extends Controller
 
     public function createOdontologo()
     {
-        $pacientes  = Paciente::with('user')->get();
+        $pacientes = Paciente::with('user')->get();
         $odontologo = Odontologo::where('user_id', Auth::id())->first();
-
         return view('odontologo.odontologo-agendar-cita', compact('pacientes', 'odontologo'));
     }
 
     public function storeOdontologo(Request $request)
     {
-        $validated  = $this->validarCita($request);
+        $validated = $this->validarCita($request);
         $odontologo = Odontologo::where('user_id', Auth::id())->first();
-
-        // Validar que el slot siga disponible
-        $service = new HorarioDisponibilidadService();
-        $fecha   = date('Y-m-d', strtotime($validated['fecha_hora']));
-        $hora    = date('H:i', strtotime($validated['fecha_hora']));
-        $slots   = $service->getSlotsDisponibles($fecha, $odontologo?->id);
-
-        if (!in_array($hora, $slots)) {
-            return back()->withErrors(['fecha_hora' => 'El horario seleccionado ya no está disponible.'])->withInput();
-        }
 
         $this->crearCita($validated, $odontologo?->id, Auth::id());
 
         return redirect()->route('odontologo.agenda')
+            ->with('mensaje', 'Cita agendada correctamente.');
+    }
+
+    // ============================
+    // RECEPCIONISTA
+    // ============================
+
+    public function indexRecepcionista(Request $request)
+    {
+        $fechaFiltro = $request->get('fecha');
+        $estadoFiltro = $request->get('estado');
+
+        $citas = Cita::with('paciente.user', 'odontologo.user')
+            ->when($fechaFiltro, fn ($q) => $q->whereDate('fecha_hora', $fechaFiltro))
+            ->when($estadoFiltro, fn ($q) => $q->where('estado', $estadoFiltro))
+            ->orderBy('fecha_hora')
+            ->get();
+
+        return view('recepcionista.citas.recepcionista-citas-lista', array_merge(
+            ['citas' => $citas, 'fechaFiltro' => $fechaFiltro, 'estadoFiltro' => $estadoFiltro],
+            $this->contadores($citas)
+        ));
+    }
+
+    public function createRecepcionista()
+    {
+        $pacientes = Paciente::with('user')->get();
+        $odontologos = Odontologo::with('user')->get();
+        return view('recepcionista.citas.recepcionista-citas-crear', compact('pacientes', 'odontologos'));
+    }
+
+    public function storeRecepcionista(Request $request)
+    {
+        $validated = $this->validarCita($request, true);
+        $this->crearCita($validated, $validated['odontologo_id'], Auth::id());
+
+        return redirect()->route('recepcionista.citas')
             ->with('mensaje', 'Cita agendada correctamente.');
     }
 
@@ -131,9 +143,7 @@ class CitaController extends Controller
     public function createPaciente()
     {
         $odontologos = Odontologo::with('user')->get();
-        $odontologo  = $odontologos->first(); // para el partial de slots
-
-        return view('paciente.paciente-crearcita', compact('odontologos', 'odontologo'));
+        return view('paciente.paciente-crearcita', compact('odontologos'));
     }
 
     public function storePaciente(Request $request)
@@ -147,29 +157,21 @@ class CitaController extends Controller
         $paciente = Paciente::where('user_id', Auth::id())->first();
 
         if (!$paciente) {
-            return back()->withErrors(['error' => 'No se encontró tu perfil de paciente.']);
+            return back()->withErrors(['error' => 'No se encontró tu perfil de paciente. Contacta al administrador.']);
         }
 
-        // Validar slot disponible
-        $service = new HorarioDisponibilidadService();
-        $fecha   = date('Y-m-d', strtotime($validated['fecha_hora']));
-        $hora    = date('H:i', strtotime($validated['fecha_hora']));
-        $slots   = $service->getSlotsDisponibles($fecha, $validated['odontologo_id']);
-
-        if (!in_array($hora, $slots)) {
-            return back()->withErrors(['fecha_hora' => 'El horario seleccionado ya no está disponible.'])->withInput();
+        if (!$this->horarioDisponible($validated['odontologo_id'], $validated['fecha_hora'])) {
+            return back()->withErrors(['fecha_hora' => 'El odontólogo ya tiene una cita agendada en ese horario.'])
+                ->withInput();
         }
-
-        $config = ConfiguracionHorario::obtener();
 
         Cita::create([
-            'paciente_id'      => $paciente->id,
-            'odontologo_id'    => $validated['odontologo_id'],
-            'user_id'          => Auth::id(),
-            'fecha_hora'       => $validated['fecha_hora'],
-            'estado'           => 'pendiente',
-            'motivo'           => $validated['motivo'],
-            'duracion_minutos' => $config->duracion_slot,
+            'paciente_id'   => $paciente->id,
+            'odontologo_id' => $validated['odontologo_id'],
+            'user_id'       => Auth::id(),
+            'fecha_hora'    => $validated['fecha_hora'],
+            'estado'        => 'pendiente',
+            'motivo'        => $validated['motivo'],
         ]);
 
         return redirect()->route('paciente.citas')
@@ -206,7 +208,13 @@ class CitaController extends Controller
         }
 
         $usuario = Auth::user();
-        $ruta = $usuario->hasRole('administrador') ? 'admin.citas.index' : 'odontologo.agenda';
+        if ($usuario->hasRole('administrador')) {
+            $ruta = 'admin.citas.index';
+        } elseif ($usuario->hasRole('odontologo')) {
+            $ruta = 'odontologo.agenda';
+        } else {
+            $ruta = 'recepcionista.citas';
+        }
 
         return redirect()->route($ruta)->with('mensaje', 'Estado de la cita actualizado.');
     }
@@ -234,17 +242,14 @@ class CitaController extends Controller
 
     private function crearCita(array $datos, $odontologoId, $userId): Cita
     {
-        $config = ConfiguracionHorario::obtener();
-
         return Cita::create([
-            'paciente_id'      => $datos['paciente_id'],
-            'odontologo_id'    => $odontologoId,
-            'user_id'          => $userId,
-            'fecha_hora'       => $datos['fecha_hora'],
-            'estado'           => $datos['estado'],
-            'motivo'           => $datos['motivo'],
-            'notas'            => $datos['notas'] ?? null,
-            'duracion_minutos' => $config->duracion_slot,
+            'paciente_id'   => $datos['paciente_id'],
+            'odontologo_id' => $odontologoId,
+            'user_id'       => $userId,
+            'fecha_hora'    => $datos['fecha_hora'],
+            'estado'        => $datos['estado'],
+            'motivo'        => $datos['motivo'],
+            'notas'         => $datos['notas'] ?? null,
         ]);
     }
 
@@ -257,5 +262,13 @@ class CitaController extends Controller
             'pendientes'  => $citas->where('estado', 'pendiente')->count(),
             'canceladas'  => $citas->where('estado', 'cancelada')->count(),
         ];
+    }
+
+    private function horarioDisponible($odontologoId, $fechaHora): bool
+    {
+        return !Cita::where('odontologo_id', $odontologoId)
+            ->where('fecha_hora', $fechaHora)
+            ->where('estado', '!=', 'cancelada')
+            ->exists();
     }
 }

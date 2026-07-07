@@ -24,6 +24,7 @@
             </a>
         </div>
 
+        {{-- MENSAJE --}}
         @if(session('mensaje'))
             <div class="bg-green-50 border border-green-200 text-green-700 text-sm font-medium px-4 py-3 rounded-xl mb-6">
                 {{ session('mensaje') }}
@@ -64,14 +65,6 @@
                                 {{ ucfirst($rol->name) }}
                             </span>
                         @endforeach
-
-                        {{-- BADGE alerta historia clínica pendiente --}}
-                        @if($usuario->hasRole('paciente') && !$usuario->paciente?->historiaClinica)
-                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">warning</span>
-                                Historia clínica pendiente
-                            </span>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -79,31 +72,17 @@
             {{-- ACCIONES RÁPIDAS --}}
             <div class="flex flex-wrap gap-3">
                 @if($usuario->hasRole('paciente'))
-
-                    {{-- Historia Clínica --}}
-                    @if($usuario->paciente?->historiaClinica)
-                        <a href="{{ route('odontologo.historia.edit', $usuario->id) }}"
-                            class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
-                            <span class="material-symbols-outlined">folder_shared</span>
-                            Ver Historia Clínica
-                        </a>
-                    @else
-                        <a href="{{ route('odontologo.historia.create', $usuario->id) }}"
-                            class="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm px-5 py-3 rounded-xl transition-colors shadow-sm">
-                            <span class="material-symbols-outlined">assignment_add</span>
-                            Llenar Historia Clínica
-                        </a>
-                    @endif
-
-                    {{-- Descargar Resumen PDF --}}
+                    <a href="{{ route('odontologo.pacientes.historial', $usuario->id) }}"
+                        class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                        <span class="material-symbols-outlined">folder_shared</span>
+                        Ver Historial Clínico
+                    </a>
                     <a href="{{ route('odontologo.pacientes.resumen', $usuario->id) }}" target="_blank"
                         class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
                         <span class="material-symbols-outlined">download</span>
                         Descargar Resumen
                     </a>
-
-                    {{-- Agendar Cita --}}
-                    <a href="{{ route('odontologo.citas.create') }}"
+                    <a href="{{ route('odontologo.citas.create') }}?paciente_id={{ $usuario->paciente->id ?? '' }}"
                         class="flex items-center gap-2 bg-blue-500 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20">
                         <span class="material-symbols-outlined">calendar_add_on</span>
                         Agendar Cita
@@ -141,22 +120,22 @@
                         </div>
                         @if($usuario->paciente)
                             @if($usuario->paciente->fecha_nacimiento)
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-xs font-bold uppercase text-slate-400">Edad</span>
-                                <span class="text-sm font-bold text-slate-900">{{ $usuario->paciente->edad }} años</span>
-                            </div>
+                                <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                                    <span class="text-xs font-bold uppercase text-slate-400">Edad</span>
+                                    <span class="text-sm font-bold text-slate-900">{{ $usuario->paciente->edad }} años</span>
+                                </div>
                             @endif
                             @if($usuario->paciente->tipo_sangre)
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-xs font-bold uppercase text-slate-400">Tipo de Sangre</span>
-                                <span class="text-sm font-bold text-slate-900">{{ $usuario->paciente->tipo_sangre }}</span>
-                            </div>
+                                <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                                    <span class="text-xs font-bold uppercase text-slate-400">Tipo de Sangre</span>
+                                    <span class="text-sm font-bold text-slate-900">{{ $usuario->paciente->tipo_sangre }}</span>
+                                </div>
                             @endif
                             @if($usuario->paciente->alergias)
-                            <div class="flex justify-between items-center py-2 border-b border-slate-100">
-                                <span class="text-xs font-bold uppercase text-slate-400">Alergias</span>
-                                <span class="text-sm font-bold text-slate-900">{{ $usuario->paciente->alergias }}</span>
-                            </div>
+                                <div class="flex justify-between items-center py-2 border-b border-slate-100">
+                                    <span class="text-xs font-bold uppercase text-slate-400">Alergias</span>
+                                    <span class="text-sm font-bold text-slate-900">{{ $usuario->paciente->alergias }}</span>
+                                </div>
                             @endif
                             <div class="flex justify-between items-center py-2 border-b border-slate-100">
                                 <span class="text-xs font-bold uppercase text-slate-400">Tipo de Dentición</span>
