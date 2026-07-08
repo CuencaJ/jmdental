@@ -104,7 +104,7 @@ class HistorialController extends Controller
                     'cara'            => $pieza['cara'] ?? null,
                     'procedimiento'   => $pieza['procedimiento'] ?? null,
                     'diagnostico'     => $pieza['diagnostico'] ?? null,
-                    'ausente'         => isset($pieza['ausente']) ? true : false,
+                    'ausente' => ($pieza['ausente'] ?? '0') === '1',
                 ]);
             }
         }

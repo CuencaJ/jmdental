@@ -2,13 +2,13 @@
 @section('titulo', 'Completar Tratamiento - JM Dental')
 @section('content')
 <div class="flex h-screen overflow-hidden bg-slate-50">
-   @include('layouts.partials.sidebar-odontologo')
+    @include('layouts.partials.sidebar-odontologo')
 
     <main class="flex-1 flex flex-col overflow-hidden">
         <header class="h-16 bg-white border-b border-slate-200 flex items-center px-8">
             <div class="relative w-full max-w-md">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                <input class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none" placeholder="Buscar..." type="text"/>
+                <input class="w-full bg-slate-100 rounded-lg pl-10 pr-4 py-2 text-sm border-none outline-none" placeholder="Buscar paciente, cita o historial..." type="text"/>
             </div>
         </header>
 
@@ -128,6 +128,10 @@
                                     class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg">
                                     Agregar
                                 </button>
+                            </div>
+                            {{-- AVISO AUSENTE --}}
+                            <div id="aviso-ausente" class="hidden mt-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-2 rounded-lg">
+                                ⚠️ Estás marcando esta pieza como <strong>Ausente</strong>. Verifica que el procedimiento sea una extracción o pieza perdida.
                             </div>
                         </div>
 
@@ -310,12 +314,14 @@ function clkCara(pieza,cara,tipo){
     document.getElementById('badge-modo').className='text-xs bg-blue-50 text-blue-600 rounded-md px-2 py-0.5 font-medium';
     document.getElementById('spr').value='';
     document.getElementById('idx').value='';
-    document.getElementById('caus').checked=false;
+    document.getElementById('caus').checked=false; // siempre false al abrir
+    document.getElementById('aviso-ausente').classList.add('hidden');
     const k=`${pieza}-${cara}`;
     if(st[k]){
         document.getElementById('spr').value=st[k].proc||'';
         document.getElementById('idx').value=st[k].dx||'';
         document.getElementById('caus').checked=st[k].estado==='ausente';
+        if(st[k].estado==='ausente') document.getElementById('aviso-ausente').classList.remove('hidden');
     }
     document.getElementById('panel-cara').classList.remove('hidden');
 }
@@ -326,12 +332,31 @@ function clkPieza(pieza,tipo){
     document.getElementById('dc').textContent='— Todas las caras';
     document.getElementById('badge-modo').textContent='pieza completa';
     document.getElementById('badge-modo').className='text-xs bg-pink-50 text-pink-700 rounded-md px-2 py-0.5 font-medium';
+    document.getElementById('spr').value='';
+    document.getElementById('idx').value='';
+    document.getElementById('caus').checked=false; // siempre false al abrir
+    document.getElementById('aviso-ausente').classList.add('hidden');
     const k0=`${pieza}-oclusal`;
-    document.getElementById('spr').value=st[k0]?.proc||'';
-    document.getElementById('idx').value=st[k0]?.dx||'';
-    document.getElementById('caus').checked=todoAusente(pieza);
+    if(st[k0]){
+        document.getElementById('spr').value=st[k0].proc||'';
+        document.getElementById('idx').value=st[k0].dx||'';
+        document.getElementById('caus').checked=todoAusente(pieza);
+        if(todoAusente(pieza)) document.getElementById('aviso-ausente').classList.remove('hidden');
+    }
     document.getElementById('panel-cara').classList.remove('hidden');
 }
+
+// Mostrar aviso cuando se marca ausente
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('caus').addEventListener('change', function() {
+        const aviso = document.getElementById('aviso-ausente');
+        if(this.checked) {
+            aviso.classList.remove('hidden');
+        } else {
+            aviso.classList.add('hidden');
+        }
+    });
+});
 
 function agregar(){
     if(!cur.pieza)return;
@@ -348,6 +373,7 @@ function agregar(){
     }
     rebuild();renderTags();
     document.getElementById('panel-cara').classList.add('hidden');
+    document.getElementById('aviso-ausente').classList.add('hidden');
 }
 
 function renderTags(){
