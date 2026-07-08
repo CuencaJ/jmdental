@@ -16,14 +16,12 @@
     <main class="flex-1 flex flex-col overflow-hidden">
 
         {{-- HEADER --}}
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
-            <div class="flex items-center gap-3">
-                <a href="{{ Auth::user()->hasRole('administrador') ? route('admin.citas.index') : route('recepcionista.citas') }}"
-                    class="text-slate-400 hover:text-slate-600">
-                    <span class="material-symbols-outlined">arrow_back</span>
-                </a>
-                <h1 class="text-xl font-bold text-slate-900">Nueva Cita</h1>
-            </div>
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center gap-3 px-8">
+            <a href="{{ Auth::user()->hasRole('administrador') ? route('admin.citas.index') : route('recepcionista.citas') }}"
+                class="text-slate-400 hover:text-slate-600">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <h1 class="text-xl font-bold text-slate-900">Nueva Cita</h1>
         </header>
 
         {{-- FORMULARIO --}}
@@ -49,16 +47,29 @@
                         {{-- PACIENTE --}}
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-2">Paciente</label>
-                            <select name="paciente_id" required
-                                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-                                <option value="">Selecciona un paciente</option>
-                                @foreach($pacientes as $paciente)
-                                    <option value="{{ $paciente->id }}"
-                                        {{ old('paciente_id') == $paciente->id ? 'selected' : '' }}>
-                                        {{ $paciente->user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @if(request('paciente_id'))
+                                @php
+                                    $pacienteSeleccionado = $pacientes->firstWhere('id', request('paciente_id'));
+                                @endphp
+                                <div class="w-full bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                                        {{ strtoupper(substr($pacienteSeleccionado->user->name ?? '', 0, 2)) }}
+                                    </div>
+                                    <span class="font-semibold text-slate-900">{{ $pacienteSeleccionado->user->name ?? 'Paciente' }}</span>
+                                </div>
+                                <input type="hidden" name="paciente_id" value="{{ request('paciente_id') }}">
+                            @else
+                                <select name="paciente_id" required
+                                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                                    <option value="">Selecciona un paciente</option>
+                                    @foreach($pacientes as $paciente)
+                                        <option value="{{ $paciente->id }}"
+                                            {{ old('paciente_id') == $paciente->id ? 'selected' : '' }}>
+                                            {{ $paciente->user->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
 
                         {{-- ODONTÓLOGO --}}

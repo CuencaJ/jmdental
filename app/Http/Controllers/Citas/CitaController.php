@@ -35,7 +35,6 @@ class CitaController extends Controller
     {
         $pacientes = Paciente::with('user')->get();
         $odontologos = Odontologo::with('user')->get();
-
         return view('citas.crearcita', compact('pacientes', 'odontologos'));
     }
 
@@ -102,7 +101,7 @@ class CitaController extends Controller
             ->orderBy('fecha_hora')
             ->get();
 
-        return view('recepcionista.citas.recepcionista-citas-lista', array_merge(
+        return view('citas.listacitas', array_merge(
             ['citas' => $citas, 'fechaFiltro' => $fechaFiltro, 'estadoFiltro' => $estadoFiltro],
             $this->contadores($citas)
         ));
@@ -112,7 +111,7 @@ class CitaController extends Controller
     {
         $pacientes = Paciente::with('user')->get();
         $odontologos = Odontologo::with('user')->get();
-        return view('recepcionista.citas.recepcionista-citas-crear', compact('pacientes', 'odontologos'));
+        return view('citas.crearcita', compact('pacientes', 'odontologos'));
     }
 
     public function storeRecepcionista(Request $request)

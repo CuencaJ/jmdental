@@ -24,7 +24,6 @@
             </a>
         </div>
 
-        {{-- MENSAJE --}}
         @if(session('mensaje'))
             <div class="bg-green-50 border border-green-200 text-green-700 text-sm font-medium px-4 py-3 rounded-xl mb-6">
                 {{ session('mensaje') }}
@@ -82,7 +81,13 @@
                         <span class="material-symbols-outlined">download</span>
                         Descargar Resumen
                     </a>
-                    <a href="{{ route('odontologo.citas.create') }}?paciente_id={{ $usuario->paciente->id ?? '' }}"
+                    @php
+                        $pacienteId = $usuario->paciente->id ?? '';
+                        $rutaAgendar = Auth::user()->hasRole('odontologo')
+                            ? route('odontologo.citas.create') . '?paciente_id=' . $pacienteId
+                            : route('recepcionista.citas.create') . '?paciente_id=' . $pacienteId;
+                    @endphp
+                    <a href="{{ $rutaAgendar }}"
                         class="flex items-center gap-2 bg-blue-500 text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20">
                         <span class="material-symbols-outlined">calendar_add_on</span>
                         Agendar Cita
