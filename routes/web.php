@@ -230,6 +230,7 @@ Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function
         ->name('paciente.perfil.update');
 });
 
+
 // Rutas recepcionista
 Route::prefix('recepcionista')->middleware(['auth', 'role:recepcionista'])->group(function () {
     Route::get('/dashboard', function () {
@@ -269,4 +270,15 @@ Route::prefix('recepcionista')->middleware(['auth', 'role:recepcionista'])->grou
         ->name('recepcionista.pacientes.store');
     Route::get('/pacientes/{id}', [\App\Http\Controllers\Recepcionista\PacienteRecepcionistaController::class, 'show'])
         ->name('recepcionista.pacientes.show');
+});
+
+
+// ============================
+// RUTAS COMPARTIDAS
+// ============================
+Route::middleware('auth')->group(function () {
+    Route::get('/citas/horas-disponibles', [\App\Http\Controllers\Admin\HorarioController::class, 'slotsDisponibles'])
+        ->name('citas.horas-disponibles');
+    Route::post('/semana/bloquear', [\App\Http\Controllers\SemanaController::class, 'bloquear'])
+        ->name('semana.bloquear');
 });
