@@ -27,6 +27,10 @@ class HistoriaClinica extends Model
         'examen_intraoral',
         'diagnostico_inicial',
         'completado',
+        'segundo_nombre',      
+        'segundo_apellido',    
+        'embarazada',          
+        'condicion_edad',
     ];
 
     protected $casts = [

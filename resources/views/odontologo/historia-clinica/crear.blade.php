@@ -45,7 +45,49 @@
                 <form action="{{ route('odontologo.historia.store', $usuario->id) }}" method="POST" class="space-y-6">
                     @csrf
 
-                    {{-- MOTIVO Y ENFERMEDAD ACTUAL --}}
+                    {{-- A. DATOS ADICIONALES DEL PACIENTE --}}
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+                        <h3 class="font-bold text-slate-900">A. Datos del paciente</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Segundo nombre</label>
+                                <input type="text" name="segundo_nombre" value="{{ old('segundo_nombre') }}"
+                                    placeholder="Segundo nombre del paciente"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Segundo apellido</label>
+                                <input type="text" name="segundo_apellido" value="{{ old('segundo_apellido') }}"
+                                    placeholder="Segundo apellido del paciente"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Condición edad</label>
+                                <select name="condicion_edad"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    <option value="anios" {{ old('condicion_edad', 'anios') === 'anios' ? 'selected' : '' }}>Años (A)</option>
+                                    <option value="meses" {{ old('condicion_edad') === 'meses' ? 'selected' : '' }}>Meses (M)</option>
+                                    <option value="dias" {{ old('condicion_edad') === 'dias' ? 'selected' : '' }}>Días (D)</option>
+                                    <option value="horas" {{ old('condicion_edad') === 'horas' ? 'selected' : '' }}>Horas (H)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Embarazada</label>
+                                <div class="flex items-center gap-6 mt-2">
+                                    <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                                        <input type="radio" name="embarazada" value="1" {{ old('embarazada') == '1' ? 'checked' : '' }}> Sí
+                                    </label>
+                                    <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                                        <input type="radio" name="embarazada" value="0" {{ old('embarazada') == '0' ? 'checked' : '' }} checked> No
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- B. MOTIVO Y ENFERMEDAD ACTUAL --}}
                     <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
                         <h3 class="font-bold text-slate-900">B. Motivo de consulta y enfermedad actual</h3>
                         <div>
@@ -61,7 +103,7 @@
                         </div>
                     </div>
 
-                    {{-- ANTECEDENTES --}}
+                    {{-- D/E. ANTECEDENTES --}}
                     <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
                         <h3 class="font-bold text-slate-900">D/E. Antecedentes patológicos</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -80,7 +122,7 @@
                         </div>
                     </div>
 
-                    {{-- CONSTANTES VITALES --}}
+                    {{-- F. CONSTANTES VITALES --}}
                     <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
                         <h3 class="font-bold text-slate-900">F. Constantes vitales</h3>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -111,7 +153,7 @@
                         </div>
                     </div>
 
-                    {{-- EXAMEN CLÍNICO --}}
+                    {{-- G. EXAMEN CLÍNICO --}}
                     <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
                         <h3 class="font-bold text-slate-900">G. Examen del sistema estomatognático</h3>
                         <div>
@@ -128,7 +170,7 @@
                         </div>
                     </div>
 
-                    {{-- DIAGNÓSTICO INICIAL --}}
+                    {{-- N. DIAGNÓSTICO INICIAL --}}
                     <div class="bg-white border border-slate-200 rounded-2xl p-6">
                         <h3 class="font-bold text-slate-900 mb-4">N. Diagnóstico inicial</h3>
                         <textarea name="diagnostico_inicial" rows="3"

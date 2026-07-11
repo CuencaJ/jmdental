@@ -16,11 +16,10 @@ class HistoriaClinicaController extends Controller
     // Mostrar formulario para llenar la historia clínica inicial
     public function create($pacienteId)
     {
-        $usuario   = User::role('paciente')->with('paciente')->findOrFail($pacienteId);
-        $paciente  = $usuario->paciente;
+        $usuario    = User::role('paciente')->with('paciente')->findOrFail($pacienteId);
+        $paciente   = $usuario->paciente;
         $odontologo = Odontologo::where('user_id', Auth::id())->first();
 
-        // Si ya existe historia clínica redirigir a ver/editar
         if ($paciente && $paciente->historiaClinica) {
             return redirect()->route('odontologo.historia.edit', $pacienteId)
                 ->with('info', 'Este paciente ya tiene una historia clínica. Puedes editarla aquí.');
@@ -48,6 +47,10 @@ class HistoriaClinicaController extends Controller
             'examen_extraoral'        => 'nullable|string',
             'examen_intraoral'        => 'nullable|string',
             'diagnostico_inicial'     => 'nullable|string',
+            'segundo_nombre'          => 'nullable|string|max:100',
+            'segundo_apellido'        => 'nullable|string|max:100',
+            'embarazada'              => 'nullable|boolean',
+            'condicion_edad'          => 'nullable|string|max:10',
         ]);
 
         HistoriaClinica::create([
@@ -55,16 +58,20 @@ class HistoriaClinicaController extends Controller
             'odontologo_id'           => $odontologo->id,
             'fecha_apertura'          => now()->toDateString(),
             'motivo_consulta'         => $validated['motivo_consulta'],
-            'enfermedad_actual'       => $validated['enfermedad_actual'],
-            'antecedentes_personales' => $validated['antecedentes_personales'],
-            'antecedentes_familiares' => $validated['antecedentes_familiares'],
-            'temperatura'             => $validated['temperatura'],
-            'pulso'                   => $validated['pulso'],
-            'frecuencia_respiratoria' => $validated['frecuencia_respiratoria'],
-            'presion_arterial'        => $validated['presion_arterial'],
-            'examen_extraoral'        => $validated['examen_extraoral'],
-            'examen_intraoral'        => $validated['examen_intraoral'],
-            'diagnostico_inicial'     => $validated['diagnostico_inicial'],
+            'enfermedad_actual'       => $validated['enfermedad_actual'] ?? null,
+            'antecedentes_personales' => $validated['antecedentes_personales'] ?? null,
+            'antecedentes_familiares' => $validated['antecedentes_familiares'] ?? null,
+            'temperatura'             => $validated['temperatura'] ?? null,
+            'pulso'                   => $validated['pulso'] ?? null,
+            'frecuencia_respiratoria' => $validated['frecuencia_respiratoria'] ?? null,
+            'presion_arterial'        => $validated['presion_arterial'] ?? null,
+            'examen_extraoral'        => $validated['examen_extraoral'] ?? null,
+            'examen_intraoral'        => $validated['examen_intraoral'] ?? null,
+            'diagnostico_inicial'     => $validated['diagnostico_inicial'] ?? null,
+            'segundo_nombre'          => $validated['segundo_nombre'] ?? null,
+            'segundo_apellido'        => $validated['segundo_apellido'] ?? null,
+            'embarazada'              => $request->embarazada ?? false,
+            'condicion_edad'          => $validated['condicion_edad'] ?? 'anios',
             'completado'              => true,
         ]);
 
@@ -75,10 +82,10 @@ class HistoriaClinicaController extends Controller
     // Ver/editar historia clínica existente
     public function edit($pacienteId)
     {
-        $usuario        = User::role('paciente')->with('paciente.historiaClinica')->findOrFail($pacienteId);
-        $paciente       = $usuario->paciente;
-        $historia       = $paciente?->historiaClinica;
-        $odontologo     = Odontologo::where('user_id', Auth::id())->first();
+        $usuario    = User::role('paciente')->with('paciente.historiaClinica')->findOrFail($pacienteId);
+        $paciente   = $usuario->paciente;
+        $historia   = $paciente?->historiaClinica;
+        $odontologo = Odontologo::where('user_id', Auth::id())->first();
 
         $tratamientos = Tratamiento::whereHas('cita', fn($q) =>
             $q->where('paciente_id', $paciente?->id)
@@ -113,9 +120,16 @@ class HistoriaClinicaController extends Controller
             'examen_extraoral'        => 'nullable|string',
             'examen_intraoral'        => 'nullable|string',
             'diagnostico_inicial'     => 'nullable|string',
+            'segundo_nombre'          => 'nullable|string|max:100',
+            'segundo_apellido'        => 'nullable|string|max:100',
+            'embarazada'              => 'nullable|boolean',
+            'condicion_edad'          => 'nullable|string|max:10',
         ]);
 
-        $historia->update($validated);
+        $historia->update(array_merge($validated, [
+            'embarazada'     => $request->embarazada ?? false,
+            'condicion_edad' => $validated['condicion_edad'] ?? 'anios',
+        ]));
 
         return redirect()->route('odontologo.historia.edit', $pacienteId)
             ->with('mensaje', 'Historia clínica actualizada correctamente.');
@@ -124,22 +138,20 @@ class HistoriaClinicaController extends Controller
     // Descargar formulario 033 PDF completo
     public function pdf($pacienteId)
     {
-        $usuario      = User::role('paciente')->with('paciente.historiaClinica')->findOrFail($pacienteId);
-        $paciente     = $usuario;
-        $historia     = $usuario->paciente?->historiaClinica;
+        $usuario  = User::role('paciente')->with('paciente.historiaClinica')->findOrFail($pacienteId);
+        $historia = $usuario->paciente?->historiaClinica;
 
-        $tratamientos = Tratamiento::whereHas('cita', fn($q) =>
+        $tratamientos = \App\Models\Tratamiento::whereHas('cita', fn($q) =>
             $q->where('paciente_id', $usuario->paciente?->id)
         )->with(['cita.odontologo.user', 'piezas'])
         ->orderBy('fecha_tratamiento')
         ->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
-            'odontologo.historia-clinica.formulario-033',
-            compact('paciente', 'historia', 'tratamientos')
-        );
-        $pdf->setPaper('A4', 'portrait');
+        $service = new \App\Services\Formulario033Service();
+        $pdf = $service->generar($usuario, $historia, $tratamientos);
 
-        return $pdf->download('formulario-033-' . \Illuminate\Support\Str::slug($usuario->name) . '.pdf');
+        return response($pdf)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="formulario-033-' . \Illuminate\Support\Str::slug($usuario->name) . '.pdf"');
     }
 }
