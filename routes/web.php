@@ -4,17 +4,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AutenticacionController;
 use Illuminate\Support\Facades\Auth;
 
-// Ruta principal → pantalla informativa
+// Ruta principal
 Route::get('/', function () {
     return view('welcome');
 })->name('inicio');
 
-// Rutas de autenticación
+// Autenticación
 Route::get('/login', [AutenticacionController::class, 'mostrarLogin'])->name('login');
 Route::post('/login', [AutenticacionController::class, 'iniciarSesion'])->name('login.iniciar');
 Route::post('/logout', [AutenticacionController::class, 'cerrarSesion'])->name('logout');
-
-// Rutas de registro
 Route::get('/registro', [AutenticacionController::class, 'mostrarRegistro'])->name('registro');
 Route::post('/registro', [AutenticacionController::class, 'registrar'])->name('registro.guardar');
 
@@ -43,15 +41,9 @@ Route::get('/admin/dashboard', function () {
     $citasHoyPendientes = $citasHoy->where('estado', 'pendiente')->count();
 
     return view('admin.admininicio', compact(
-        'totalTratamientosMes',
-        'tratamientosMes',
-        'citasHoy',
-        'totalUsuarios',
-        'totalPacientes',
-        'pacientesActivos',
-        'pacientesInactivos',
-        'citasHoyConfirmadas',
-        'citasHoyPendientes'
+        'totalTratamientosMes', 'tratamientosMes', 'citasHoy',
+        'totalUsuarios', 'totalPacientes', 'pacientesActivos',
+        'pacientesInactivos', 'citasHoyConfirmadas', 'citasHoyPendientes'
     ));
 })->name('admin.dashboard')->middleware(['auth', 'role:administrador']);
 
@@ -78,26 +70,26 @@ Route::get('/odontologo/dashboard', function () {
         ->sortDesc();
 
     $totalPacientes = \App\Models\Paciente::count();
-
     $totalCitasPendientes = \App\Models\Cita::when($odontologo, fn ($q) => $q->where('odontologo_id', $odontologo->id))
-        ->where('estado', 'pendiente')
-        ->count();
-
+        ->where('estado', 'pendiente')->count();
     $citasHoyConfirmadas = $citasHoy->where('estado', 'confirmada')->count();
     $citasHoyPendientes = $citasHoy->where('estado', 'pendiente')->count();
 
     return view('odontologo.odontologoinicio', compact(
-        'citasHoy',
-        'totalTratamientosMes',
-        'tratamientosMes',
-        'totalPacientes',
-        'totalCitasPendientes',
-        'citasHoyConfirmadas',
-        'citasHoyPendientes'
+        'citasHoy', 'totalTratamientosMes', 'tratamientosMes',
+        'totalPacientes', 'totalCitasPendientes',
+        'citasHoyConfirmadas', 'citasHoyPendientes'
     ));
 })->name('odontologo.dashboard')->middleware(['auth', 'role:odontologo']);
 
-// Rutas administrador
+// Dashboard recepcionista
+Route::get('/recepcionista/dashboard', function () {
+    return view('recepcionista.recepcionistainicio');
+})->name('recepcionista.dashboard')->middleware(['auth', 'role:recepcionista']);
+
+// ============================
+// RUTAS ADMINISTRADOR
+// ============================
 Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(function () {
     Route::resource('usuarios', \App\Http\Controllers\Admin\UsuarioController::class)
         ->names('admin.usuarios');
@@ -115,9 +107,19 @@ Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(functi
 
     Route::get('/reportes/tratamientos', [\App\Http\Controllers\Admin\ReporteController::class, 'tratamientos'])
         ->name('admin.reportes.tratamientos');
+
+    Route::get('/horario', [\App\Http\Controllers\Admin\HorarioController::class, 'index'])
+        ->name('admin.horario.index');
+    Route::patch('/horario', [\App\Http\Controllers\Admin\HorarioController::class, 'update'])
+        ->name('admin.horario.update');
+
+    Route::get('/semana', [\App\Http\Controllers\SemanaController::class, 'adminIndex'])
+        ->name('admin.semana');
 });
 
-// Rutas odontólogo
+// ============================
+// RUTAS ODONTÓLOGO
+// ============================
 Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(function () {
     Route::get('/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'index'])
         ->name('odontologo.pacientes.index');
@@ -131,6 +133,17 @@ Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(func
         ->name('odontologo.pacientes.historial');
     Route::get('/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
         ->name('odontologo.pacientes.resumen');
+
+    Route::get('/pacientes/{id}/historia/crear', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'create'])
+        ->name('odontologo.historia.create');
+    Route::post('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'store'])
+        ->name('odontologo.historia.store');
+    Route::get('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'edit'])
+        ->name('odontologo.historia.edit');
+    Route::patch('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update'])
+        ->name('odontologo.historia.update');
+    Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
+        ->name('odontologo.historia.pdf');
 
     Route::get('/agenda', [\App\Http\Controllers\Citas\CitaController::class, 'indexOdontologo'])
         ->name('odontologo.agenda');
@@ -152,19 +165,18 @@ Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(func
     Route::get('/historial/archivo/{id}/eliminar', [\App\Http\Controllers\Odontologo\HistorialController::class, 'eliminarArchivo'])
         ->name('odontologo.historial.archivo.eliminar');
 
-    // Rutas de tu compañero
-    Route::get('/semana', [\App\Http\Controllers\Odontologo\AgendaController::class, 'semana'])
-        ->name('odontologo.semana');
-    Route::get('/citas/{cita}/estado', [\App\Http\Controllers\Odontologo\AgendaController::class, 'cambiarEstado'])
-        ->name('odontologo.citas.cambiarEstado');
-
     Route::get('/perfil', [\App\Http\Controllers\Odontologo\PerfilController::class, 'index'])
         ->name('odontologo.perfil');
     Route::put('/perfil', [\App\Http\Controllers\Odontologo\PerfilController::class, 'update'])
         ->name('odontologo.perfil.update');
+
+    Route::get('/semana', [\App\Http\Controllers\SemanaController::class, 'odontologoIndex'])
+        ->name('odontologo.semana');
 });
 
-// Rutas paciente
+// ============================
+// RUTAS PACIENTE
+// ============================
 Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function () {
     Route::get('/dashboard', function () {
         $paciente = \App\Models\Paciente::where('user_id', Auth::id())->first();
@@ -180,10 +192,7 @@ Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function
             $q->when($paciente, fn($q2) => $q2->where('paciente_id', $paciente->id))
         )->count();
 
-        return view('paciente.pacienteinicio', compact(
-            'proximaCita',
-            'totalTratamientos'
-        ));
+        return view('paciente.pacienteinicio', compact('proximaCita', 'totalTratamientos'));
     })->name('paciente.dashboard');
 
     Route::get('/citas', [\App\Http\Controllers\Citas\CitaController::class, 'indexPaciente'])
@@ -198,7 +207,7 @@ Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function
 
         $tratamientos = \App\Models\Tratamiento::whereHas('cita', fn($q) =>
             $q->when($paciente, fn($q2) => $q2->where('paciente_id', $paciente->id))
-        )->with('cita.odontologo.user')->orderBy('fecha_tratamiento', 'desc')->get();
+        )->with(['cita.odontologo.user', 'piezas'])->orderBy('fecha_tratamiento', 'desc')->get();
 
         $totalTratamientos = $tratamientos->count();
         $totalCosto = $tratamientos->sum('costo');
@@ -217,12 +226,25 @@ Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function
         });
 
         return view('paciente.paciente-tratamientos', compact(
-            'tratamientos',
-            'totalTratamientos',
-            'totalCosto',
-            'datosTratamientos'
+            'tratamientos', 'totalTratamientos', 'totalCosto', 'datosTratamientos'
         ));
     })->name('paciente.tratamientos');
+
+    Route::get('/tratamientos/{id}/pdf', function ($id) {
+        $paciente = \App\Models\Paciente::where('user_id', Auth::id())->first();
+        $tratamiento = \App\Models\Tratamiento::with([
+            'cita.paciente.user', 'cita.odontologo.user', 'piezas'
+        ])->whereHas('cita', fn($q) =>
+            $q->when($paciente, fn($q2) => $q2->where('paciente_id', $paciente->id))
+        )->findOrFail($id);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+            'paciente.paciente-tratamiento-pdf',
+            compact('tratamiento')
+        );
+        $pdf->setPaper('A4', 'portrait');
+        return $pdf->download('tratamiento-' . \Illuminate\Support\Str::slug($tratamiento->nombre) . '.pdf');
+    })->name('paciente.tratamientos.pdf');
 
     Route::get('/perfil', [\App\Http\Controllers\Paciente\PacientePerfilController::class, 'index'])
         ->name('paciente.perfil');
