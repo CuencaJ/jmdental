@@ -19,6 +19,8 @@ class TratamientoPieza extends Model
         'procedimiento',
         'diagnostico',
         'ausente',
+        'movilidad',
+        'recesion',
     ];
 
     protected $casts = [

@@ -14,7 +14,7 @@
             <a href="{{ route('odontologo.historia.pdf', $usuario->id) }}" target="_blank"
                 class="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
                 <span class="material-symbols-outlined text-base">download</span>
-                Descargar PDF
+                Descargar Historial Clinico
             </a>
         </div>
 

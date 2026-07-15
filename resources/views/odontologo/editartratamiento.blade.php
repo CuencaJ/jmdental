@@ -84,7 +84,8 @@
                         </div>
                         <p class="text-xs text-slate-400 mb-4">
                             Haz clic en <strong class="text-slate-600">una zona</strong> para marcar una cara ·
-                            Haz clic en el <strong class="text-blue-500">número</strong> para marcar la pieza completa
+                            Haz clic en el <strong class="text-blue-500">número</strong> para marcar la pieza completa ·
+                            Haz clic en las <strong class="text-slate-600">casillas de arriba/abajo</strong> para marcar Movilidad/Recesión (1-4, solo piezas permanentes)
                         </p>
 
                         <svg id="sva" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible;"></svg>
@@ -202,18 +203,23 @@ const CL={vestibular:'Vestibular',palatina:'Palatina/Lingual',mesial:'Mesial',di
 const CC={vestibular:'#dbeafe',palatina:'#fef3c7',mesial:'#ede9fe',distal:'#fce7f3',oclusal:'#dcfce7'};
 const CS={vestibular:'#3b82f6',palatina:'#f59e0b',mesial:'#7c3aed',distal:'#db2777',oclusal:'#16a34a'};
 const CAUS='#ef4444';
-let st={},cur={},modo='adulto';
+let st={},stMov={},cur={},modo='adulto';
 const S=14;
 
 function piezasIniciales(){
     return [
         @foreach($tratamiento->piezas as $p)
-        {pieza:{{$p->pieza_numero}},cara:'{{$p->cara}}',tipo:'{{$p->tipo_denticion}}',proc:'{{addslashes($p->procedimiento ?? '')}}',dx:'{{addslashes($p->diagnostico ?? '')}}',ausente:{{$p->ausente?'true':'false'}}},
+        {pieza:{{$p->pieza_numero}},cara:'{{$p->cara}}',tipo:'{{$p->tipo_denticion}}',proc:'{{addslashes($p->procedimiento ?? '')}}',dx:'{{addslashes($p->diagnostico ?? '')}}',ausente:{{$p->ausente?'true':'false'}},movilidad:'{{$p->movilidad ?? ''}}',recesion:'{{$p->recesion ?? ''}}'},
         @endforeach
     ];
 }
 piezasIniciales().forEach(p=>{
-    st[`${p.pieza}-${p.cara}`]={pieza:p.pieza,cara:p.cara,tipo:p.tipo,proc:p.proc,dx:p.dx,estado:p.ausente?'ausente':'seleccionado'};
+    if(p.cara !== '_movrec'){
+        st[`${p.pieza}-${p.cara}`]={pieza:p.pieza,cara:p.cara,tipo:p.tipo,proc:p.proc,dx:p.dx,estado:p.ausente?'ausente':'seleccionado'};
+    }
+    if(p.movilidad || p.recesion){
+        stMov[p.pieza] = {movilidad: p.movilidad || '', recesion: p.recesion || ''};
+    }
 });
 
 function esPiezaCompleta(num){ return CARAS.every(c=>st[`${num}-${c}`]); }
@@ -281,29 +287,97 @@ function buildNum(svg,num,cx,cy,tipo){
     t.textContent=num;
 }
 
-function buildOdo(id,sup,inf,tipo,W){
+// Movilidad/Recesión: casillas visuales tipo checkbox, igual que en el
+// formulario 033 en papel. Solo piezas permanentes (11-48) las tienen -
+// el formulario no trae esa fila para las temporales (51-85). Clic
+// rota el valor 0(vacío)->1->2->3->4->0.
+function toggleMovRec(pieza,campo){
+    if(!stMov[pieza]) stMov[pieza]={movilidad:'',recesion:''};
+    const actual=stMov[pieza][campo];
+    stMov[pieza][campo]= actual===''?'1':(actual==='4'?'':String(Number(actual)+1));
+    if(stMov[pieza].movilidad==='' && stMov[pieza].recesion==='') delete stMov[pieza];
+    rebuild();renderTags();
+}
+
+function buildCasillaMovRec(svg,pieza,campo,cx,cy){
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    const s=9;
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',cx-s/2);rect.setAttribute('y',cy-s/2);
+    rect.setAttribute('width',s);rect.setAttribute('height',s);
+    rect.setAttribute('fill','#fff');rect.setAttribute('stroke','#94a3b8');rect.setAttribute('stroke-width','0.7');
+    rect.style.cursor='pointer';
+    rect.addEventListener('click',()=>toggleMovRec(pieza,campo));
+    g.appendChild(rect);
+    const val=(stMov[pieza]&&stMov[pieza][campo])||'';
+    if(val){
+        const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x',cx);t.setAttribute('y',cy);
+        t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+        t.setAttribute('font-size','7');t.setAttribute('fill','#1e3a8a');t.setAttribute('font-weight','bold');
+        t.style.pointerEvents='none';
+        t.textContent=val;
+        g.appendChild(t);
+    }
+    svg.appendChild(g);
+}
+
+function buildOdo(id,sup,inf,tipo,W,conMovRec){
     const svg=document.getElementById(id);
-    svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${W} 140`);
+    svg.innerHTML='';
+    const yOff=conMovRec?30:0; // espacio extra arriba para RECESIÓN/MOVILIDAD
+    const H=conMovRec?200:140;
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
     const n=sup.length,half=n/2,GAP=(W-20)/n,MID=W/2;
+    if(conMovRec){
+        buildEtiquetaFila(svg,'R',6,8);
+        buildEtiquetaFila(svg,'M',6,20);
+        buildEtiquetaFila(svg,'M',6,127+yOff+15);
+        buildEtiquetaFila(svg,'R',6,127+yOff+27);
+    }
     sup.forEach((num,i)=>{
         const x=i<half?MID-(half-i-0.5)*GAP:MID+(i-half+0.5)*GAP;
-        buildNum(svg,num,x,13,tipo);buildDiente(svg,num,x,35,tipo);
+        if(conMovRec){
+            buildCasillaMovRec(svg,num,'recesion',x,8);
+            buildCasillaMovRec(svg,num,'movilidad',x,20);
+        }
+        buildNum(svg,num,x,13+yOff,tipo);buildDiente(svg,num,x,35+yOff,tipo);
     });
     inf.forEach((num,i)=>{
         const x=i<half?MID-(half-i-0.5)*GAP:MID+(i-half+0.5)*GAP;
-        buildDiente(svg,num,x,105,tipo);buildNum(svg,num,x,127,tipo);
+        buildDiente(svg,num,x,105+yOff,tipo);buildNum(svg,num,x,127+yOff,tipo);
+        if(conMovRec){
+            buildCasillaMovRec(svg,num,'movilidad',x,127+yOff+15);
+            buildCasillaMovRec(svg,num,'recesion',x,127+yOff+27);
+        }
     });
     const lv=document.createElementNS('http://www.w3.org/2000/svg','line');
-    lv.setAttribute('x1',MID);lv.setAttribute('y1',5);lv.setAttribute('x2',MID);lv.setAttribute('y2',135);
+    lv.setAttribute('x1',MID);lv.setAttribute('y1',5+yOff);lv.setAttribute('x2',MID);lv.setAttribute('y2',135+yOff);
     lv.setAttribute('stroke','#e2e8f0');lv.setAttribute('stroke-width','1');svg.appendChild(lv);
     const lh=document.createElementNS('http://www.w3.org/2000/svg','line');
-    lh.setAttribute('x1',10);lh.setAttribute('y1',70);lh.setAttribute('x2',W-10);lh.setAttribute('y2',70);
+    lh.setAttribute('x1',10);lh.setAttribute('y1',70+yOff);lh.setAttribute('x2',W-10);lh.setAttribute('y2',70+yOff);
     lh.setAttribute('stroke','#e2e8f0');lh.setAttribute('stroke-width','1');svg.appendChild(lh);
 }
 
+function buildEtiquetaFila(svg,letra,cx,cy){
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',cx);t.setAttribute('y',cy);
+    t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','6');t.setAttribute('fill','#64748b');t.setAttribute('font-weight','bold');
+    t.setAttribute('font-family','sans-serif');
+    t.textContent=letra;
+    svg.appendChild(t);
+}
+
 function rebuild(){
-    buildOdo('sva',SA,IA,'permanente',620);
-    buildOdo('svi',SI,II,'temporal',420);
+    // OJO: las casillas de Movilidad/Recesión para las piezas TEMPORALES
+    // (odontograma infantil) son solo visuales en esta pantalla - el PDF
+    // del formulario 033 oficial NO trae esa fila de casillas para piezas
+    // temporales (51-85), así que aunque se marquen aquí, no van a
+    // aparecer impresas. Se agregan igual por consistencia visual con el
+    // odontograma adulto.
+    buildOdo('sva',SA,IA,'permanente',620,true);
+    buildOdo('svi',SI,II,'temporal',420,true);
 }
 
 function clkCara(pieza,cara,tipo){
@@ -358,6 +432,34 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Autocompletar CIE-10 según el procedimiento elegido. OJO: el CIE-10
+// codifica DIAGNÓSTICOS, no procedimientos - esto es el diagnóstico más
+// típico que suele justificar cada procedimiento, como valor sugerido
+// editable, no una regla clínica fija. El odontólogo puede corregirlo si
+// el caso real es distinto. "Blanqueamiento" no tiene código porque es
+// estético, no una enfermedad.
+const CIE10_POR_PROCEDIMIENTO = {
+    'Restauración con Resina': 'K02.1 - Caries de la dentina',
+    'Sellador': 'K02.0 - Caries limitada al esmalte',
+    'Extracción': 'K02.9 - Caries dental, no especificada',
+    'Endodoncia': 'K04.0 - Pulpitis',
+    'Corona': 'K02.9 - Caries dental, no especificada',
+    'Implante': 'K08.1 - Pérdida de dientes por extracción o enfermedad periodontal',
+    'Ortodoncia': 'K07.4 - Maloclusión, no especificada',
+    'Profiláctico': 'K03.6 - Depósitos [acreciones] en los dientes',
+    'Limpieza': 'K03.6 - Depósitos [acreciones] en los dientes',
+};
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('spr').addEventListener('change', function() {
+        const idxInput = document.getElementById('idx');
+        // Solo autocompleta si el campo está vacío, para no pisar algo
+        // que el odontólogo ya haya escrito a mano.
+        if(idxInput.value.trim() === '' && CIE10_POR_PROCEDIMIENTO[this.value]){
+            idxInput.value = CIE10_POR_PROCEDIMIENTO[this.value];
+        }
+    });
+});
+
 function agregar(){
     if(!cur.pieza)return;
     const proc=document.getElementById('spr').value;
@@ -381,12 +483,14 @@ function renderTags(){
     const hid=document.getElementById('hidden-piezas');
     div.innerHTML='';hid.innerHTML='';
     const piezasVistas=new Set();
+    const piezasConEntrada=new Set();
     let idx=0;
     Object.values(st).forEach(v=>{
         const todas=esPiezaCompleta(v.pieza);
         if(todas){
             if(!piezasVistas.has(v.pieza)){
                 piezasVistas.add(v.pieza);
+                piezasConEntrada.add(v.pieza);
                 const aus=todoAusente(v.pieza);
                 const sp=document.createElement('span');
                 sp.style.cssText=`display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;margin:3px;background:${aus?'#fee2e2':'#fce7f3'};color:${aus?'#991b1b':'#9d174d'};border:0.5px solid ${aus?'#fca5a5':'#fbcfe8'};`;
@@ -399,11 +503,14 @@ function renderTags(){
                         <input type="hidden" name="piezas[${idx}][cara]" value="${cara}">
                         <input type="hidden" name="piezas[${idx}][procedimiento]" value="${vv.proc||''}">
                         <input type="hidden" name="piezas[${idx}][diagnostico]" value="${vv.dx||''}">
-                        <input type="hidden" name="piezas[${idx}][ausente]" value="${vv.estado==='ausente'?'1':'0'}">`;
+                        <input type="hidden" name="piezas[${idx}][ausente]" value="${vv.estado==='ausente'?'1':'0'}">
+                        <input type="hidden" name="piezas[${idx}][movilidad]" value="${(stMov[v.pieza]&&stMov[v.pieza].movilidad)||''}">
+                        <input type="hidden" name="piezas[${idx}][recesion]" value="${(stMov[v.pieza]&&stMov[v.pieza].recesion)||''}">`;
                     idx++;
                 });
             }
         } else {
+            piezasConEntrada.add(v.pieza);
             const aus=v.estado==='ausente';
             const sp=document.createElement('span');
             sp.style.cssText=`display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;margin:3px;background:${aus?'#fee2e2':'#eff6ff'};color:${aus?'#991b1b':'#1d4ed8'};border:0.5px solid ${aus?'#fca5a5':'#bfdbfe'};`;
@@ -414,9 +521,32 @@ function renderTags(){
                 <input type="hidden" name="piezas[${idx}][cara]" value="${v.cara}">
                 <input type="hidden" name="piezas[${idx}][procedimiento]" value="${v.proc||''}">
                 <input type="hidden" name="piezas[${idx}][diagnostico]" value="${v.dx||''}">
-                <input type="hidden" name="piezas[${idx}][ausente]" value="${v.estado==='ausente'?'1':'0'}">`;
+                <input type="hidden" name="piezas[${idx}][ausente]" value="${v.estado==='ausente'?'1':'0'}">
+                <input type="hidden" name="piezas[${idx}][movilidad]" value="${(stMov[v.pieza]&&stMov[v.pieza].movilidad)||''}">
+                <input type="hidden" name="piezas[${idx}][recesion]" value="${(stMov[v.pieza]&&stMov[v.pieza].recesion)||''}">`;
             idx++;
         }
+    });
+    // Piezas que tienen SOLO Movilidad/Recesión marcada, sin ningún
+    // procedimiento/cara (por eso no aparecen en `st`) - si no se agrega
+    // esto aparte, esos valores nunca se mandarían al servidor. Se usa
+    // cara="_movrec" (no es una cara real de CARAS) para que al recargar
+    // piezasIniciales() NO se interprete como un tratamiento de una cara
+    // individual y no aparezca como tag fantasma "Pieza X · Oclusal".
+    Object.keys(stMov).forEach(key=>{
+        const pieza=Number(key);
+        if(piezasConEntrada.has(pieza)) return;
+        const mv=stMov[pieza];
+        const tipo=pieza>=51?'temporal':'permanente';
+        hid.innerHTML+=`<input type="hidden" name="piezas[${idx}][pieza_numero]" value="${pieza}">
+            <input type="hidden" name="piezas[${idx}][tipo_denticion]" value="${tipo}">
+            <input type="hidden" name="piezas[${idx}][cara]" value="_movrec">
+            <input type="hidden" name="piezas[${idx}][procedimiento]" value="">
+            <input type="hidden" name="piezas[${idx}][diagnostico]" value="">
+            <input type="hidden" name="piezas[${idx}][ausente]" value="0">
+            <input type="hidden" name="piezas[${idx}][movilidad]" value="${mv.movilidad||''}">
+            <input type="hidden" name="piezas[${idx}][recesion]" value="${mv.recesion||''}">`;
+        idx++;
     });
 }
 

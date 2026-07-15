@@ -65,6 +65,11 @@ class HistorialController extends Controller
             'piezas.*.procedimiento'  => 'nullable|string|max:255',
             'piezas.*.diagnostico'    => 'nullable|string|max:255',
             'piezas.*.ausente'        => 'nullable|boolean',
+            // Formulario 033, sección H: "MOVILIDAD Y RECESIÓN: MARCAR
+            // (1, 2, 3 ó 4), SI APLICA". Llegan como string ('', '1'..'4')
+            // desde los inputs ocultos del odontograma.
+            'piezas.*.movilidad'      => 'nullable|string|in:,1,2,3,4',
+            'piezas.*.recesion'       => 'nullable|string|in:,1,2,3,4',
         ]);
 
         $tratamiento = Tratamiento::findOrFail($id);
@@ -104,7 +109,9 @@ class HistorialController extends Controller
                     'cara'            => $pieza['cara'] ?? null,
                     'procedimiento'   => $pieza['procedimiento'] ?? null,
                     'diagnostico'     => $pieza['diagnostico'] ?? null,
-                    'ausente' => ($pieza['ausente'] ?? '0') === '1',
+                    'ausente'         => ($pieza['ausente'] ?? '0') === '1',
+                    'movilidad'       => ($pieza['movilidad'] ?? '') !== '' ? $pieza['movilidad'] : null,
+                    'recesion'        => ($pieza['recesion'] ?? '') !== '' ? $pieza['recesion'] : null,
                 ]);
             }
         }
