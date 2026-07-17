@@ -292,6 +292,12 @@ Route::prefix('recepcionista')->middleware(['auth', 'role:recepcionista'])->grou
         ->name('recepcionista.pacientes.store');
     Route::get('/pacientes/{id}', [\App\Http\Controllers\Recepcionista\PacienteRecepcionistaController::class, 'show'])
         ->name('recepcionista.pacientes.show');
+    Route::get('/pacientes/{id}/historial', [\App\Http\Controllers\Odontologo\PacienteController::class, 'historial'])
+        ->name('recepcionista.pacientes.historial');
+    Route::get('/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
+        ->name('recepcionista.pacientes.resumen');
+    Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
+    ->name('recepcionista.historia.pdf');
 });
 
 

@@ -90,7 +90,8 @@
                         {{-- FECHA Y HORA --}}
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha y hora</label>
-                            <input type="datetime-local" name="fecha_hora" value="{{ old('fecha_hora') }}"
+                            <input type="datetime-local" name="fecha_hora" 
+                                min="{{ now()->format('Y-m-d\TH:i') }}"value="{{ old('fecha_hora') }}"
                                 class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
                                 required>
                         </div>

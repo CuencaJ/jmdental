@@ -2,7 +2,11 @@
 @section('titulo', 'Historial del Paciente - JM Dental')
 @section('content')
 <div class="flex min-h-screen bg-slate-50">
-    @include('layouts.partials.sidebar-odontologo')
+    @if(Auth::user()->hasRole('odontologo'))
+        @include('layouts.partials.sidebar-odontologo')
+    @elseif(Auth::user()->hasRole('recepcionista'))
+        @include('layouts.partials.sidebar-recepcionista')
+    @endif
     <main class="flex-1 overflow-y-auto p-8">
 
         <div class="mb-6 flex items-center justify-between">
@@ -11,7 +15,10 @@
                 <span class="material-symbols-outlined text-xl">arrow_back</span>
                 <span>Volver</span>
             </a>
-            <a href="{{ route('odontologo.historia.pdf', $usuario->id) }}" target="_blank"
+            <a href="{{ Auth::user()->hasRole('odontologo') 
+                ? route('odontologo.historia.pdf', $usuario->id) 
+                : route('recepcionista.historia.pdf', $usuario->id) }}" 
+                target="_blank"
                 class="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
                 <span class="material-symbols-outlined text-base">download</span>
                 Descargar Historial Clinico

@@ -74,7 +74,7 @@ class PacienteController extends Controller
         $paciente = $usuario->paciente;
 
         $citas = $paciente ? $paciente->citas()
-            ->with(['tratamiento.piezas', 'tratamiento.archivos'])
+            ->with(['tratamiento.archivos'])
             ->whereHas('tratamiento')
             ->orderByDesc('fecha_hora')
             ->get() : collect();
@@ -89,7 +89,7 @@ class PacienteController extends Controller
         $paciente = $usuario->paciente;
 
         $citas = $paciente ? $paciente->citas()
-            ->with(['tratamiento.piezas'])
+            ->with(['tratamiento'])
             ->whereHas('tratamiento')
             ->orderByDesc('fecha_hora')
             ->get() : collect();

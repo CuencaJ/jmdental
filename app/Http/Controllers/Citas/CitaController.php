@@ -226,7 +226,7 @@ class CitaController extends Controller
     {
         $reglas = [
             'paciente_id' => 'required|exists:pacientes,id',
-            'fecha_hora'  => 'required|date',
+            'fecha_hora'  => 'required|date|after:now',
             'motivo'      => 'required|string|max:255',
             'estado'      => 'required|in:pendiente,confirmada,completada,cancelada',
             'notas'       => 'nullable|string',

@@ -17,7 +17,9 @@
     <main class="flex-1 overflow-y-auto p-8 lg:p-10">
 
         <div class="mb-6">
-            <a href="{{ url()->previous() }}"
+            <a href="{{ Auth::user()->hasRole('odontologo') 
+                ? route('odontologo.pacientes.index') 
+                : route('recepcionista.pacientes') }}"
                 class="flex items-center gap-2 text-slate-400 hover:text-blue-500 transition-colors text-sm font-semibold">
                 <span class="material-symbols-outlined text-xl">arrow_back</span>
                 <span>Volver</span>
@@ -71,16 +73,26 @@
             {{-- ACCIONES RÁPIDAS --}}
             <div class="flex flex-wrap gap-3">
                 @if($usuario->hasRole('paciente'))
-                    <a href="{{ route('odontologo.pacientes.historial', $usuario->id) }}"
+                    {{-- Ver Historial Clínico --}}
+                    <a href="{{ Auth::user()->hasRole('odontologo')
+                        ? route('odontologo.pacientes.historial', $usuario->id)
+                        : route('recepcionista.pacientes.historial', $usuario->id) }}"
                         class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
                         <span class="material-symbols-outlined">folder_shared</span>
                         Ver Historial Clínico
                     </a>
-                    <a href="{{ route('odontologo.pacientes.resumen', $usuario->id) }}" target="_blank"
+
+                    {{-- Descargar Resumen --}}
+                    <a href="{{ Auth::user()->hasRole('odontologo')
+                        ? route('odontologo.pacientes.resumen', $usuario->id)
+                        : route('recepcionista.pacientes.resumen', $usuario->id) }}"
+                        target="_blank"
                         class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
                         <span class="material-symbols-outlined">download</span>
                         Descargar Resumen
                     </a>
+
+                    {{-- Agendar Cita --}}
                     @php
                         $pacienteId = $usuario->paciente->id ?? '';
                         $rutaAgendar = Auth::user()->hasRole('odontologo')
