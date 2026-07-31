@@ -122,26 +122,21 @@ class Formulario033Service
 
         // ── A. DATOS PACIENTE ──
         // Fila de datos (banda real en la plantilla: 134.7px - 160.9px).
-        // Primer nombre/apellido vienen de users.name en formato "Nombre
-        // Apellido" (mismo estándar que se exige al registrar pacientes).
-        // Segundo nombre/apellido vienen de historias_clinicas, capturados
-        // manualmente por el odontólogo en la primera consulta.
-        $tokensPac = $this->tokensNombre($paciente->name ?? '');
-        $nombrePac   = $tokensPac[0] ?? '';
-        $apellidoPac = $tokensPac[1] ?? '';
-        $segundoApellidoPac = $tokensPac[2] ?? '';
-
-        $this->escribir($pdf, $this->x(60),  $this->y(140), $apellidoPac);             // primer apellido (col 49.5-241.2)
-        $this->escribir($pdf, $this->x(250), $this->y(140), $historia?->segundo_apellido ?? $segundoApellidoPac); // segundo apellido (col 241.2-407.5)
-        $this->escribir($pdf, $this->x(415), $this->y(140), $nombrePac);                // primer nombre (col 407.5-624.7)
-        $this->escribir($pdf, $this->x(632), $this->y(140), $historia?->segundo_nombre ?? '');   // segundo nombre (col 624.7-791.0)
+        // Los 4 componentes del nombre se leen DIRECTO de las columnas de
+        // `users` (primer_nombre, segundo_nombre, primer_apellido,
+        // segundo_apellido). Ya no se parsea `users.name`: ese parseo era
+        // ambiguo y dejaba las casillas de apellidos vacías.
+        $this->escribir($pdf, $this->x(60),  $this->y(140), $paciente->primer_apellido ?? '');   // primer apellido (col 49.5-241.2)
+        $this->escribir($pdf, $this->x(250), $this->y(140), $paciente->segundo_apellido ?? '');  // segundo apellido (col 241.2-407.5)
+        $this->escribir($pdf, $this->x(415), $this->y(140), $paciente->primer_nombre ?? '');     // primer nombre (col 407.5-624.7)
+        $this->escribir($pdf, $this->x(632), $this->y(140), $paciente->segundo_nombre ?? '');    // segundo nombre (col 624.7-791.0)
         $this->escribir($pdf, $this->x(800), $this->y(140), $pac?->genero ? mb_strtoupper(mb_substr($pac->genero, 0, 1)) : ''); // sexo (col 791.0-846.4) - "Femenino"->"F" / "Masculino"->"M"
         $this->escribir($pdf, $this->x(855), $this->y(140), (string) ($pac?->edad ?? ''));       // edad (col 846.4-901.8)
 
         // Cédula: no existe casilla propia en la sección A del 033, se usa
         // la celda de "NÚMERO DE HISTORIA CLÍNICA ÚNICA" (fila de datos,
         // banda 61.5-87.7px, columna 557.7-804.8px).
-        $this->escribir($pdf, $this->x(575), $this->y(66), $pac?->cedula ?? '');
+        $this->escribir($pdf, $this->x(575), $this->y(66), $pac?->cedula ?? $paciente->cedula ?? '');
 
         // Condición edad H/D/M/A. Columnas: H=901.8-943.4 D=943.4-988.5
         // M=988.5-1053.3 A=1053.3-1177.0 (fila de datos y=134.7-160.9px).
@@ -200,11 +195,10 @@ class Formulario033Service
         // ── O. DATOS PROFESIONAL ── (fila de datos y=500px, debajo de los labels en 472.7px)
         $this->escribir($pdf, $this->x(76),  $this->y(500), $historia?->fecha_apertura?->format('Y-m-d') ?? now()->format('Y-m-d'));
 
-        // Mismo estándar "Nombre Apellido" que el paciente arriba.
-        $tokensOd = $this->tokensNombre($od?->user?->name ?? '');
-        $this->escribir($pdf, $this->x(429), $this->y(500), $tokensOd[0] ?? '');  // primer nombre (col x=429.6)
-        $this->escribir($pdf, $this->x(744), $this->y(500), $tokensOd[1] ?? '');  // primer apellido (col x=744.8)
-        $this->escribir($pdf, $this->x(1013), $this->y(500), $tokensOd[2] ?? ''); // segundo apellido (col x=1013.8)
+        // Igual que el paciente: columnas directas de `users`, sin parseo.
+        $this->escribir($pdf, $this->x(429),  $this->y(500), $od?->user?->primer_nombre ?? '');    // primer nombre (col x=429.6)
+        $this->escribir($pdf, $this->x(744),  $this->y(500), $od?->user?->primer_apellido ?? '');  // primer apellido (col x=744.8)
+        $this->escribir($pdf, $this->x(1013), $this->y(500), $od?->user?->segundo_apellido ?? ''); // segundo apellido (col x=1013.8)
 
         // Número de documento / licencia. La celda del label (banda
         // 526.4-559.9px) es angosta y de una sola línea - no cabe nada al
@@ -252,22 +246,6 @@ class Formulario033Service
     private function limpiar(string $texto): string
     {
         return iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $texto) ?: $texto;
-    }
-
-    /**
-     * Limpia un nombre completo (quita títulos como Od., Dr., Dra., Lic.,
-     * Ing., Mg.) y lo separa en tokens, asumiendo el formato estándar
-     * "Nombre Apellido [SegundoApellido]". Nota: el paciente de prueba
-     * actual ("Lopez Paciente") no sigue este formato porque es un dato
-     * de prueba mal cargado; los pacientes que se registren de ahora en
-     * adelante deben ingresar su nombre como "Nombre Apellido".
-     */
-    private function tokensNombre(?string $nombreCompleto): array
-    {
-        $limpio = trim((string) $nombreCompleto);
-        $limpio = preg_replace('/^(od|dr|dra|lic|ing|mg)\.?\s+/iu', '', $limpio);
-
-        return array_values(array_filter(explode(' ', $limpio), fn ($t) => $t !== ''));
     }
 
     private function marcarOdontograma(Fpdi033 $pdf, $tratamientos): void
@@ -341,7 +319,7 @@ class Formulario033Service
      * Marca las casillas de MOVILIDAD/RECESIÓN de la sección H (arriba de
      * las piezas superiores 18-28, abajo de las piezas inferiores 48-38).
      * Coordenadas (px, sistema de referencia 1241x1754) medidas
-     * directamente sobre form033.pdp:
+     * directamente sobre form033.pdf:
      *   Superior: RECESIÓN y=1094.0 | MOVILIDAD y=1112.5
      *   Inferior: MOVILIDAD y=1360.6 | RECESIÓN y=1379.1
      * (el orden se invierte abajo: primero movilidad, luego recesión,
@@ -561,32 +539,3 @@ class Formulario033Service
         }
     }
 }
-
-/*
- * ══════════════════════════════════════════════════════════════════════
- * REQUIERE (para que este archivo funcione tal cual):
- * ══════════════════════════════════════════════════════════════════════
- *
- * 1. Ejecutar la migración que agrega a `historias_clinicas`:
- *    segundo_nombre, segundo_apellido, embarazada, condicion_edad
- *    (ver 2026_07_11_222503_add_campos_formulario033_to_historias_clinicas_table.php)
- *
- * 2. Agregar esas 4 columnas al $fillable de App\Models\HistoriaClinica.
- *
- * 3. Agregar los campos al formulario de creación de historia clínica
- *    (resources/views/odontologo/historia-clinica/crear.blade.php) y a
- *    HistoriaClinicaController@store / @update para que se guarden.
- *    Ver snippets sugeridos aparte.
- *
- * 4. Ejecutar la migración que agrega a `tratamiento_piezas`: movilidad,
- *    recesion (ver 2026_07_14_000000_add_movilidad_recesion_to_tratamiento_piezas_table.php)
- *    y aplicar los cambios del formulario de "Completar tratamiento"
- *    descritos en INSTRUCCIONES_movilidad_recesion.md para poder
- *    capturarlos desde la web.
- *
- * PENDIENTE (sin resolver, no es parte de este archivo):
- * - Teléfono, email, dirección y contacto de emergencia del paciente NO
- *   se imprimen en el PDF: el formulario 033 oficial no tiene casilla para
- *   ellos en la sección A. Siguen disponibles en el sistema (perfil del
- *   paciente), solo no aparecen en este documento específico.
- */

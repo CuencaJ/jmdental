@@ -16,6 +16,7 @@ class Paciente extends Model
         'user_id',
         'cedula',
         'fecha_nacimiento',
+        'genero',
         'direccion',
         'telefono',
         'tipo_sangre',

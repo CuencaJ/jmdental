@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Models\User;
 use App\Models\Paciente;
 use Spatie\Permission\Models\Role;
@@ -40,21 +41,36 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'             => 'required|string|max:255',
-            'email'            => 'required|email|unique:users,email',
-            'telefono'         => 'required|string|max:15',
-            'password'         => 'required|min:8|confirmed',
-            'rol'              => 'required|exists:roles,name',
-            'cedula'           => 'required_if:rol,paciente|nullable|string|max:10',
-            'fecha_nacimiento' => 'required_if:rol,paciente|nullable|date',
-            'genero'           => 'required_if:rol,paciente|nullable|in:Masculino,Femenino,Otro',
+            'primer_nombre'     => 'required|string|max:100',
+            'segundo_nombre'    => 'nullable|string|max:100',
+            'primer_apellido'   => 'required|string|max:100',
+            'segundo_apellido'  => 'nullable|string|max:100',
+            // La cédula es la credencial de login: obligatoria para todos los roles.
+            'cedula'            => 'required|digits:10|unique:users,cedula',
+            // El email NO es unique: un menor puede usar el correo de su representante.
+            'email'             => 'required|string|email:rfc|max:255',
+            'telefono'          => 'required|string|max:15',
+            'password'          => 'required|min:8|confirmed',
+            'rol'               => 'required|exists:roles,name',
+            'fecha_nacimiento'  => 'required_if:rol,paciente|nullable|date|before:today|after:1900-01-01',
+            'genero'            => 'nullable|in:Masculino,Femenino,Otro',
+            'numero_licencia'   => 'nullable|string|max:255|unique:odontologos,numero_licencia',
+            'anios_experiencia' => 'nullable|integer|min:0|max:70',
+        ], [
+            'cedula.unique'          => 'Esta cédula ya está registrada en el sistema.',
+            'numero_licencia.unique' => 'Este número de licencia ya está registrado en otro odontólogo.',
         ]);
 
+        // `name` lo arma solo el hook booted() del modelo User.
         $usuario = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'telefono' => $request->telefono,
-            'password' => Hash::make($request->password),
+            'primer_nombre'    => $request->primer_nombre,
+            'segundo_nombre'   => $request->segundo_nombre,
+            'primer_apellido'  => $request->primer_apellido,
+            'segundo_apellido' => $request->segundo_apellido,
+            'cedula'           => $request->cedula,
+            'email'            => $request->email,
+            'telefono'         => $request->telefono,
+            'password'         => Hash::make($request->password),
         ]);
 
         $usuario->assignRole($request->rol);
@@ -78,6 +94,20 @@ class UsuarioController extends Controller
             ]);
         }
 
+        // Sin este registro el odontólogo no aparece al agendar citas
+        // y la sección O del formulario 033 sale vacía.
+        if ($request->rol === 'odontologo') {
+            $usuario->odontologo()->create([
+                'cedula'            => $request->cedula,
+                'especialidad'      => $request->especialidad,
+                'numero_licencia'   => $request->numero_licencia ?: null,
+                'telefono'          => $request->telefono,
+                'universidad'       => $request->universidad,
+                'titulo'            => $request->titulo,
+                'anios_experiencia' => $request->anios_experiencia,
+            ]);
+        }
+
         return redirect()->route('admin.usuarios.index')
             ->with('mensaje', 'Usuario creado correctamente.')
             ->with('icono', 'success');
@@ -93,61 +123,97 @@ class UsuarioController extends Controller
     // Mostrar formulario de edición
     public function edit($id)
     {
-        $usuario = User::with('roles')->findOrFail($id);
+        $usuario = User::with('roles', 'paciente', 'odontologo')->findOrFail($id);
         $roles = Role::all();
         return view('usuarios.editarusuario', compact('usuario', 'roles'));
     }
 
     // Actualizar usuario
     public function update(Request $request, $id)
-{
-    $usuario = User::findOrFail($id);
+    {
+        $usuario = User::with('odontologo')->findOrFail($id);
 
-    $request->validate([
-        'name'             => 'required|string|max:255',
-        'email'            => 'required|email|unique:users,email,' . $id,
-        'telefono'         => 'required|string|max:15',
-        'rol'              => 'required|exists:roles,name',
-        'cedula'           => 'required_if:rol,paciente|nullable|string|max:10',
-        'fecha_nacimiento' => 'required_if:rol,paciente|nullable|date',
-    ]);
+        $request->validate([
+            'primer_nombre'    => 'required|string|max:100',
+            'segundo_nombre'   => 'nullable|string|max:100',
+            'primer_apellido'  => 'required|string|max:100',
+            'segundo_apellido' => 'nullable|string|max:100',
+            'cedula'           => [
+                'required', 'digits:10',
+                Rule::unique('users', 'cedula')->ignore($usuario->id),
+            ],
+            'email'            => 'required|string|email:rfc|max:255',
+            'telefono'         => 'required|string|max:15',
+            'password'         => 'nullable|min:8|confirmed',
+            'rol'              => 'required|exists:roles,name',
+            'fecha_nacimiento' => 'required_if:rol,paciente|nullable|date|before:today|after:1900-01-01',
+            'genero'           => 'nullable|in:Masculino,Femenino,Otro',
+            'numero_licencia'  => [
+                'nullable', 'string', 'max:255',
+                Rule::unique('odontologos', 'numero_licencia')->ignore($usuario->odontologo?->id),
+            ],
+            'anios_experiencia' => 'nullable|integer|min:0|max:70',
+        ], [
+            'cedula.unique'          => 'Esta cédula ya está registrada en otro usuario.',
+            'numero_licencia.unique' => 'Este número de licencia ya está registrado en otro odontólogo.',
+        ]);
 
-    $usuario->update([
-        'name'     => $request->name,
-        'email'    => $request->email,
-        'telefono' => $request->telefono,
-    ]);
+        $usuario->update([
+            'primer_nombre'    => $request->primer_nombre,
+            'segundo_nombre'   => $request->segundo_nombre,
+            'primer_apellido'  => $request->primer_apellido,
+            'segundo_apellido' => $request->segundo_apellido,
+            'cedula'           => $request->cedula,
+            'email'            => $request->email,
+            'telefono'         => $request->telefono,
+        ]);
 
-    if ($request->password) {
-        $usuario->update(['password' => Hash::make($request->password)]);
-    }
+        if ($request->password) {
+            $usuario->update(['password' => Hash::make($request->password)]);
+        }
 
-    $usuario->syncRoles($request->rol);
+        $usuario->syncRoles($request->rol);
 
-    // Si es paciente, actualizar datos adicionales
-    if ($request->rol === 'paciente') {
-        $usuario->paciente()->updateOrCreate(
-            ['user_id' => $usuario->id],
-            [
-                'cedula'                => $request->cedula,
-                'fecha_nacimiento'      => $request->fecha_nacimiento,
-                'direccion'             => $request->direccion,
-                'telefono'              => $request->telefono,
-                'tipo_sangre'           => $request->tipo_sangre,
-                'alergias'              => $request->alergias,
-                'observaciones'         => $request->observaciones,
-                'contacto_emergencia'   => $request->contacto_emergencia,
-                'telefono_emergencia'   => $request->telefono_emergencia,
-                'enfermedades_cronicas' => $request->enfermedades_cronicas,
-                'medicamentos_actuales' => $request->medicamentos_actuales,
-                'medico_cabecera'       => $request->medico_cabecera,
-            ]
-        );
-    }
+        // Si es paciente, actualizar datos adicionales
+        if ($request->rol === 'paciente') {
+            $usuario->paciente()->updateOrCreate(
+                ['user_id' => $usuario->id],
+                [
+                    'cedula'                => $request->cedula,
+                    'fecha_nacimiento'      => $request->fecha_nacimiento,
+                    'genero'                => $request->genero,
+                    'direccion'             => $request->direccion,
+                    'telefono'              => $request->telefono,
+                    'tipo_sangre'           => $request->tipo_sangre,
+                    'alergias'              => $request->alergias,
+                    'observaciones'         => $request->observaciones,
+                    'contacto_emergencia'   => $request->contacto_emergencia,
+                    'telefono_emergencia'   => $request->telefono_emergencia,
+                    'enfermedades_cronicas' => $request->enfermedades_cronicas,
+                    'medicamentos_actuales' => $request->medicamentos_actuales,
+                    'medico_cabecera'       => $request->medico_cabecera,
+                ]
+            );
+        }
 
-    return redirect()->route('admin.usuarios.index')
-        ->with('mensaje', 'Usuario actualizado correctamente.')
-        ->with('icono', 'success');
+        if ($request->rol === 'odontologo') {
+            $usuario->odontologo()->updateOrCreate(
+                ['user_id' => $usuario->id],
+                [
+                    'cedula'            => $request->cedula,
+                    'especialidad'      => $request->especialidad,
+                    'numero_licencia'   => $request->numero_licencia ?: null,
+                    'telefono'          => $request->telefono,
+                    'universidad'       => $request->universidad,
+                    'titulo'            => $request->titulo,
+                    'anios_experiencia' => $request->anios_experiencia,
+                ]
+            );
+        }
+
+        return redirect()->route('admin.usuarios.index')
+            ->with('mensaje', 'Usuario actualizado correctamente.')
+            ->with('icono', 'success');
     }
 
     // Eliminar usuario

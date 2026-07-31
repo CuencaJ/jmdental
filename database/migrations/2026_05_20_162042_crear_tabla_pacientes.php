@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('cedula', 10)->unique()->nullable();
             $table->date('fecha_nacimiento')->nullable();
+            $table->string('genero', 20)->nullable();
             $table->string('direccion')->nullable();
             $table->string('telefono', 15)->nullable();
             $table->string('tipo_sangre', 5)->nullable();

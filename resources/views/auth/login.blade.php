@@ -41,7 +41,7 @@
             </div>
             <div class="text-center">
                 <h1 class="text-2xl font-black tracking-tight text-slate-900 mb-2">Bienvenido de nuevo</h1>
-                <p class="text-slate-500 text-sm">Inicia sesión en tu cuenta</p>
+                <p class="text-slate-500 text-sm">Ingresa con tu número de cédula</p>
             </div>
         </div>
 
@@ -56,18 +56,19 @@
         <form action="{{ route('login.iniciar') }}" method="POST" class="space-y-5">
             @csrf
 
-            {{-- EMAIL --}}
+            {{-- CÉDULA --}}
             <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Correo Electrónico
+                    Cédula
                 </label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                        <span class="material-symbols-outlined text-slate-400 text-xl">mail</span>
+                        <span class="material-symbols-outlined text-slate-400 text-xl">badge</span>
                     </div>
-                    <input type="email" name="email" value="{{ old('email') }}"
+                    <input type="text" name="cedula" value="{{ old('cedula') }}"
+                        maxlength="10" inputmode="numeric" autocomplete="username"
                         class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-300"
-                        placeholder="nombre@ejemplo.com" required autofocus>
+                        placeholder="1234567890" required autofocus>
                 </div>
             </div>
 
@@ -80,7 +81,7 @@
                     <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                         <span class="material-symbols-outlined text-slate-400 text-xl">lock</span>
                     </div>
-                    <input type="password" name="password" id="password"
+                    <input type="password" name="password" id="password" autocomplete="current-password"
                         class="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-300"
                         placeholder="••••••••" required>
                     <button type="button" onclick="togglePassword()"

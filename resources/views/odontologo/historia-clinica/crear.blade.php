@@ -80,7 +80,7 @@
                                         <input type="radio" name="embarazada" value="1" {{ old('embarazada') == '1' ? 'checked' : '' }}> Sí
                                     </label>
                                     <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-                                        <input type="radio" name="embarazada" value="0" {{ old('embarazada') == '0' ? 'checked' : '' }} checked> No
+                                        <input type="radio" name="embarazada" value="0" {{ old('embarazada', '0') == '0' ? 'checked' : '' }}> No
                                     </label>
                                 </div>
                             </div>

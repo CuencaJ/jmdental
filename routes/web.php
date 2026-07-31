@@ -180,16 +180,17 @@ Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(func
 Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function () {
     Route::get('/dashboard', function () {
         $paciente = \App\Models\Paciente::where('user_id', Auth::id())->first();
+        abort_unless($paciente, 403, 'No se encontró el perfil de paciente asociado a tu cuenta.');
 
         $proximaCita = \App\Models\Cita::with('odontologo.user')
-            ->when($paciente, fn($q) => $q->where('paciente_id', $paciente->id))
+            ->where('paciente_id', $paciente->id)
             ->where('fecha_hora', '>=', now())
             ->whereIn('estado', ['pendiente', 'confirmada'])
             ->orderBy('fecha_hora')
             ->first();
 
         $totalTratamientos = \App\Models\Tratamiento::whereHas('cita', fn($q) =>
-            $q->when($paciente, fn($q2) => $q2->where('paciente_id', $paciente->id))
+            $q->where('paciente_id', $paciente->id)
         )->count();
 
         return view('paciente.pacienteinicio', compact('proximaCita', 'totalTratamientos'));
@@ -204,10 +205,13 @@ Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function
 
     Route::get('/tratamientos', function () {
         $paciente = \App\Models\Paciente::where('user_id', Auth::id())->first();
+        abort_unless($paciente, 403, 'No se encontró el perfil de paciente asociado a tu cuenta.');
 
         $tratamientos = \App\Models\Tratamiento::whereHas('cita', fn($q) =>
-            $q->when($paciente, fn($q2) => $q2->where('paciente_id', $paciente->id))
-        )->with(['cita.odontologo.user', 'piezas'])->orderBy('fecha_tratamiento', 'desc')->get();
+            $q->where('paciente_id', $paciente->id)
+        )->with(['cita.odontologo.user', 'piezas'])
+         ->orderBy('fecha_tratamiento', 'desc')
+         ->get();
 
         $totalTratamientos = $tratamientos->count();
         $totalCosto = $tratamientos->sum('costo');
@@ -232,10 +236,12 @@ Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function
 
     Route::get('/tratamientos/{id}/pdf', function ($id) {
         $paciente = \App\Models\Paciente::where('user_id', Auth::id())->first();
+        abort_unless($paciente, 403, 'No se encontró el perfil de paciente asociado a tu cuenta.');
+
         $tratamiento = \App\Models\Tratamiento::with([
             'cita.paciente.user', 'cita.odontologo.user', 'piezas'
         ])->whereHas('cita', fn($q) =>
-            $q->when($paciente, fn($q2) => $q2->where('paciente_id', $paciente->id))
+            $q->where('paciente_id', $paciente->id)
         )->findOrFail($id);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
@@ -298,6 +304,8 @@ Route::prefix('recepcionista')->middleware(['auth', 'role:recepcionista'])->grou
         ->name('recepcionista.pacientes.resumen');
     Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
     ->name('recepcionista.historia.pdf');
+    Route::get('/semana', [App\Http\Controllers\SemanaController::class, 'adminIndex'])
+    ->name('recepcionista.semana');
 });
 
 

@@ -7,25 +7,9 @@ use App\Models\HorarioBloqueado;
 use App\Models\Odontologo;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class SemanaController extends Controller
 {
-    // Vista semanal del odontólogo
-    public function odontologoIndex(Request $request)
-    {
-        $odontologo = Odontologo::where('user_id', Auth::id())->first();
-        $semana     = $this->getSemana($request->get('semana'));
-        $config     = ConfiguracionHorario::obtener();
-        $slots      = $this->generarSlots($config);
-        $bloqueados = $this->getBloqueados($semana, $odontologo?->id);
-
-        return view('semana.preparar-semana', compact(
-            'odontologo', 'semana', 'slots', 'bloqueados', 'config'
-        ));
-    }
-
-    // Vista semanal del admin
     public function adminIndex(Request $request)
     {
         $odontologos  = Odontologo::with('user')->get();
@@ -36,64 +20,126 @@ class SemanaController extends Controller
         $slots        = $this->generarSlots($config);
         $bloqueados   = $this->getBloqueados($semana, $odontologoId);
 
+        // Generar slots por día — filtrando solo los pasados en el día de hoy
+        $slotsPorDia = [];
+        $ahora = Carbon::now();
+        foreach ($semana as $dia) {
+            $esHoy = $dia->toDateString() === Carbon::today()->toDateString();
+            if ($esHoy) {
+                $slotsPorDia[$dia->toDateString()] = array_values(array_filter($slots, function($slot) use ($ahora, $config, $dia) {
+                    $slotTime = Carbon::parse($dia->toDateString() . ' ' . $slot);
+                    $slotFin  = $slotTime->copy()->addMinutes($config->duracion_slot);
+                    return $slotFin->gt($ahora);
+                }));
+            } else {
+                $slotsPorDia[$dia->toDateString()] = $slots;
+            }
+        }
+
         return view('semana.preparar-semana-admin', compact(
-            'odontologos', 'odontologo', 'semana', 'slots', 'bloqueados', 'config'
+            'odontologos', 'odontologo', 'semana', 'slots', 'slotsPorDia', 'bloqueados', 'config'
         ));
     }
 
-    // Bloquear un slot
-    public function bloquear(Request $request)
+    public function odontologoIndex(Request $request)
     {
-        $validated = $request->validate([
-            'odontologo_id' => 'required|exists:odontologos,id',
-            'fecha'         => 'required|date',
-            'hora_inicio'   => 'required|date_format:H:i',
-            'motivo'        => 'nullable|string|max:255',
-        ]);
+        $odontologo = Odontologo::where('user_id', auth()->id())->first();
+        $semana     = $this->getSemana($request->get('semana'));
+        $config     = ConfiguracionHorario::obtener();
+        $slots      = $this->generarSlots($config);
+        $bloqueados = $this->getBloqueados($semana, $odontologo?->id);
 
-        $config      = ConfiguracionHorario::obtener();
-        $horaFin     = Carbon::parse($validated['fecha'] . ' ' . $validated['hora_inicio'])
-            ->addMinutes($config->duracion_slot)
-            ->format('H:i');
-
-        // Si ya existe ese bloqueo, desbloquear (toggle)
-        $existente = HorarioBloqueado::where('odontologo_id', $validated['odontologo_id'])
-            ->whereDate('fecha', $validated['fecha'])
-            ->where('hora_inicio', $validated['hora_inicio'] . ':00')
-            ->first();
-
-        if ($existente) {
-            $existente->delete();
-            return response()->json(['accion' => 'desbloqueado', 'mensaje' => 'Horario desbloqueado.']);
+        // Generar slots por día — filtrando solo los pasados en el día de hoy
+        $slotsPorDia = [];
+        $ahora = Carbon::now();
+        foreach ($semana as $dia) {
+            $esHoy = $dia->toDateString() === Carbon::today()->toDateString();
+            if ($esHoy) {
+                $slotsPorDia[$dia->toDateString()] = array_values(array_filter($slots, function($slot) use ($ahora, $config, $dia) {
+                    $slotTime = Carbon::parse($dia->toDateString() . ' ' . $slot);
+                    $slotFin  = $slotTime->copy()->addMinutes($config->duracion_slot);
+                    return $slotFin->gt($ahora);
+                }));
+            } else {
+                $slotsPorDia[$dia->toDateString()] = $slots;
+            }
         }
 
-        HorarioBloqueado::create([
-            'odontologo_id' => $validated['odontologo_id'],
-            'fecha'         => $validated['fecha'],
-            'hora_inicio'   => $validated['hora_inicio'] . ':00',
-            'hora_fin'      => $horaFin . ':00',
-            'motivo'        => $validated['motivo'] ?? 'Bloqueado',
-            'created_by'    => Auth::id(),
-        ]);
-
-        return response()->json(['accion' => 'bloqueado', 'mensaje' => 'Horario bloqueado correctamente.']);
+        return view('semana.preparar-semana', compact(
+            'odontologo', 'semana', 'slots', 'slotsPorDia', 'bloqueados', 'config'
+        ));
     }
 
-    // ============================
-    // MÉTODOS PRIVADOS
-    // ============================
-
-    private function getSemana(?string $fechaBase): array
+    public function semana(Request $request)
     {
-        $inicio = $fechaBase
-            ? Carbon::parse($fechaBase)->startOfWeek()
+        $odontologo = Odontologo::where('user_id', auth()->id())->first();
+        $semana     = $this->getSemana($request->get('semana'));
+        $config     = ConfiguracionHorario::obtener();
+        $slots      = $this->generarSlots($config);
+        $bloqueados = $this->getBloqueados($semana, $odontologo?->id);
+
+        // Generar slots por día — filtrando solo los pasados en el día de hoy
+        $slotsPorDia = [];
+        $ahora = Carbon::now();
+        foreach ($semana as $dia) {
+            $esHoy = $dia->toDateString() === Carbon::today()->toDateString();
+            if ($esHoy) {
+                $slotsPorDia[$dia->toDateString()] = array_values(array_filter($slots, function($slot) use ($ahora, $config, $dia) {
+                    $slotTime = Carbon::parse($dia->toDateString() . ' ' . $slot);
+                    $slotFin  = $slotTime->copy()->addMinutes($config->duracion_slot);
+                    return $slotFin->gt($ahora);
+                }));
+            } else {
+                $slotsPorDia[$dia->toDateString()] = $slots;
+            }
+        }
+
+        return view('semana.preparar-semana', compact(
+            'odontologo', 'semana', 'slots', 'slotsPorDia', 'bloqueados', 'config'
+        ));
+    }
+
+    public function bloquear(Request $request)
+    {
+        $request->validate([
+            'odontologo_id' => 'required|exists:odontologos,id',
+            'fecha'         => 'required|date',
+            'hora_inicio'   => 'required',
+            'hora_fin'      => 'required',
+        ]);
+
+        $existe = HorarioBloqueado::where('odontologo_id', $request->odontologo_id)
+            ->where('fecha', $request->fecha)
+            ->where('hora_inicio', $request->hora_inicio)
+            ->where('hora_fin', $request->hora_fin)
+            ->first();
+
+        if ($existe) {
+            $existe->delete();
+        } else {
+            HorarioBloqueado::create([
+                'odontologo_id' => $request->odontologo_id,
+                'fecha'         => $request->fecha,
+                'hora_inicio'   => $request->hora_inicio,
+                'hora_fin'      => $request->hora_fin,
+            ]);
+        }
+
+        return back()->with('mensaje', 'Horario actualizado correctamente.');
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private function getSemana(?string $semanaParam): array
+    {
+        $lunes = $semanaParam
+            ? Carbon::parse($semanaParam)->startOfWeek()
             : Carbon::now()->startOfWeek();
 
-        $dias = [];
-        for ($i = 0; $i < 7; $i++) {
-            $dias[] = $inicio->copy()->addDays($i);
-        }
-        return $dias;
+        return array_map(
+            fn($i) => $lunes->copy()->addDays($i),
+            range(0, 6)
+        );
     }
 
     private function generarSlots(ConfiguracionHorario $config): array
@@ -115,14 +161,13 @@ class SemanaController extends Controller
     {
         if (!$odontologoId) return [];
 
-        $inicio = $semana[0]->toDateString();
-        $fin    = $semana[6]->toDateString();
+        $fechas = array_map(fn($d) => $d->toDateString(), $semana);
 
         return HorarioBloqueado::where('odontologo_id', $odontologoId)
-            ->whereBetween('fecha', [$inicio, $fin])
+            ->whereIn('fecha', $fechas)
             ->get()
-            ->groupBy(fn($b) => $b->fecha->toDateString())
-            ->map(fn($grupo) => $grupo->pluck('hora_inicio')->map(fn($h) => substr($h, 0, 5))->toArray())
+            ->groupBy('fecha')
+            ->map(fn($g) => $g->pluck('hora_inicio')->toArray())
             ->toArray();
     }
 }

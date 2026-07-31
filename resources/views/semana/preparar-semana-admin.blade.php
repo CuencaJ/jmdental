@@ -2,7 +2,11 @@
 @section('titulo', 'Preparar Semana - JM Dental')
 @section('content')
 <div class="flex h-screen overflow-hidden bg-slate-50">
-    @include('layouts.partials.sidebar-admin')
+    @if(Auth::user()->hasRole('administrador'))
+        @include('layouts.partials.sidebar-admin')
+    @elseif(Auth::user()->hasRole('recepcionista'))
+        @include('layouts.partials.sidebar-recepcionista')
+    @endif
     <main class="flex-1 flex flex-col overflow-hidden">
         <header class="h-16 bg-white border-b border-slate-200 flex items-center px-8 gap-4">
             <h1 class="text-lg font-bold text-slate-900">Preparar semana</h1>

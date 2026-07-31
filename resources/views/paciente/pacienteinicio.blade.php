@@ -32,7 +32,7 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-extrabold text-slate-900">
-                        ¡Bienvenido, {{ Auth::user()->name }}!
+                        ¡Bienvenido, {{ Auth::user()->nombre_corto }}!
                     </h1>
                     <p class="text-slate-500 mt-1">
                         Hoy es {{ ucfirst(\Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY')) }}

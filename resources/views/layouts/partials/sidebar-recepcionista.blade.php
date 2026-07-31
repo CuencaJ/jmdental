@@ -42,6 +42,12 @@
             <span class="material-symbols-outlined">person_add</span>
             <span class="text-sm">Registrar paciente</span>
         </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+            {{ request()->routeIs('recepcionista.semana') ? 'bg-blue-50 text-blue-500 font-semibold' : 'text-slate-600 hover:bg-slate-100' }}"
+            href="{{ route('recepcionista.semana') }}">
+            <span class="material-symbols-outlined">calendar_view_week</span>
+            <span class="text-sm">Preparar semana</span>
+        </a>
     </nav>
 
     <div class="p-4 border-t border-slate-200 mt-auto">

@@ -30,7 +30,7 @@
             {{-- BIENVENIDA --}}
             <div>
                 <h1 class="text-3xl font-extrabold text-slate-900">
-                    ¡Buenos días, {{ Auth::user()->name }}!
+                    ¡Bienvenido, {{ Auth::user()->nombre_corto }}!
                 </h1>
                 <p class="text-slate-500 mt-1">
                     Hoy es {{ ucfirst(\Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY')) }}

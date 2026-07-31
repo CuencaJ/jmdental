@@ -14,7 +14,7 @@
             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
         </div>
         <div class="flex flex-col overflow-hidden">
-            <h1 class="text-sm font-semibold truncate">{{ Auth::user()->name }}</h1>
+            <h1 class="text-sm font-semibold truncate">{{ Auth::user()->nombre_corto }}</h1>
             <p class="text-xs text-slate-500">Paciente</p>
         </div>
     </a>

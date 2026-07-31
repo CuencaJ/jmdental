@@ -4,6 +4,7 @@
 
 @section('content')
 
+
 <div class="flex h-screen overflow-hidden bg-slate-50">
 
     @include('layouts.partials.sidebar-admin')
@@ -30,17 +31,20 @@
             {{-- BIENVENIDA --}}
             <div>
                 <h1 class="text-3xl font-extrabold text-slate-900">
-                    Bienvenido, {{ Auth::user()->name }}
+                    ¡Bienvenido, {{ Auth::user()->nombre_corto }}!
                 </h1>
                 <p class="text-slate-500 mt-1">
                     Hoy es {{ ucfirst(\Carbon\Carbon::now()->locale('es')->isoFormat('dddd, D [de] MMMM [de] YYYY')) }}
                 </p>
             </div>
 
-            {{-- MÉTRICAS --}}
+            {{-- MÉTRICAS (cada card es un acceso directo a su sección) --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                {{-- USUARIOS --}}
+                <a href="{{ route('admin.usuarios.index') }}"
+                    class="group bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3
+                           hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
                             <span class="material-symbols-outlined">group</span>
@@ -49,15 +53,21 @@
                     </div>
                     <div>
                         <p class="text-2xl font-bold text-slate-900">{{ $totalUsuarios }}</p>
-                        <p class="text-xs text-slate-400 mt-0.5">usuarios registrados</p>
+                        <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                            usuarios registrados
+                            <span class="material-symbols-outlined text-sm text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+                        </p>
                     </div>
                     <div class="flex gap-2">
                         <span class="text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full">{{ $pacientesActivos }} activos</span>
                         <span class="text-xs bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full">{{ $pacientesInactivos }} inactivos</span>
                     </div>
-                </div>
+                </a>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                {{-- PACIENTES --}}
+                <a href="{{ route('admin.usuarios.index', ['rol' => 'paciente']) }}"
+                    class="group bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3
+                           hover:border-emerald-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
                             <span class="material-symbols-outlined">people</span>
@@ -66,11 +76,17 @@
                     </div>
                     <div>
                         <p class="text-2xl font-bold text-slate-900">{{ $totalPacientes }}</p>
-                        <p class="text-xs text-slate-400 mt-0.5">pacientes registrados</p>
+                        <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                            pacientes registrados
+                            <span class="material-symbols-outlined text-sm text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+                        </p>
                     </div>
-                </div>
+                </a>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                {{-- AGENDA --}}
+                <a href="{{ route('admin.citas.index') }}"
+                    class="group bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3
+                           hover:border-amber-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
                             <span class="material-symbols-outlined">calendar_today</span>
@@ -79,15 +95,21 @@
                     </div>
                     <div>
                         <p class="text-2xl font-bold text-slate-900">{{ $citasHoy->count() }}</p>
-                        <p class="text-xs text-slate-400 mt-0.5">citas programadas hoy</p>
+                        <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                            citas programadas hoy
+                            <span class="material-symbols-outlined text-sm text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+                        </p>
                     </div>
                     <div class="flex gap-2 flex-wrap">
                         <span class="text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full">{{ $citasHoyConfirmadas }} confirmadas</span>
                         <span class="text-xs bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full">{{ $citasHoyPendientes }} pendientes</span>
                     </div>
-                </div>
+                </a>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                {{-- TRATAMIENTOS DEL MES --}}
+                <a href="{{ route('admin.reportes.tratamientos') }}"
+                    class="group bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3
+                           hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5 transition-all">
                     <div class="flex items-center justify-between">
                         <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
                             <span class="material-symbols-outlined">task_alt</span>
@@ -96,9 +118,12 @@
                     </div>
                     <div>
                         <p class="text-2xl font-bold text-slate-900">{{ $totalTratamientosMes }}</p>
-                        <p class="text-xs text-slate-400 mt-0.5">tratamientos completados</p>
+                        <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                            tratamientos completados
+                            <span class="material-symbols-outlined text-sm text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+                        </p>
                     </div>
-                </div>
+                </a>
 
             </div>
 
