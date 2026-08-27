@@ -136,7 +136,16 @@ class Formulario033Service
         // Cédula: no existe casilla propia en la sección A del 033, se usa
         // la celda de "NÚMERO DE HISTORIA CLÍNICA ÚNICA" (fila de datos,
         // banda 61.5-87.7px, columna 557.7-804.8px).
-        $this->escribir($pdf, $this->x(575), $this->y(66), $pac?->cedula ?? $paciente->cedula ?? '');
+        // N° Historia Clínica Única = cédula del paciente
+        $this->escribir($pdf, $this->x(575), $this->y(66), $pac?->cedula ?? '');
+        // Establecimiento de salud (columna real 337-557px, fila de datos
+        // 61-87px; antes estaba en x=820 que cae en NÚMERO DE ARCHIVO,
+        // por eso "JM Dental" se veía pegado a esa celda).
+        $this->escribir($pdf, $this->x(350), $this->y(70), 'JM Dental');
+        // Institución del sistema: se deja en blanco (clínica privada, sin
+        // código IESS/MSP) — antes tenía 'PRIVADO' fijo.
+        // Unicódigo (en blanco)
+        // Número de archivo (en blanco)
 
         // Condición edad H/D/M/A. Columnas: H=901.8-943.4 D=943.4-988.5
         // M=988.5-1053.3 A=1053.3-1177.0 (fila de datos y=134.7-160.9px).
@@ -162,9 +171,26 @@ class Formulario033Service
 
         // ── D. ANTECEDENTES PERSONALES ── (banda 409.1-578.6px, texto desde 465px, debajo de la fila de checkboxes 1-10)
         $this->escribirMultilinea($pdf, $this->x(60), $this->y(465), $this->x(1117), $historia?->antecedentes_personales ?? '');
+        // Casillas 1-10 (fila real 433-459px, centro y=446). Columnas
+        // (centro, px) medidas sobre la fila de checkboxes de la plantilla:
+        // 1=137 2=226 3=337 4=407 5=550 6=637 7=721 8=831 9=914 10=1113
+        $this->marcarCasillasNumeradas(
+            $pdf,
+            $historia?->antecedentes_personales_check ?? [],
+            [1 => 137, 2 => 226, 3 => 337, 4 => 407, 5 => 550, 6 => 637, 7 => 721, 8 => 831, 9 => 914, 10 => 1113],
+            446
+        );
 
         // ── E. ANTECEDENTES FAMILIARES ── (banda 578.6-759.0px, texto desde 645px)
         $this->escribirMultilinea($pdf, $this->x(60), $this->y(645), $this->x(1117), $historia?->antecedentes_familiares ?? '');
+        // Casillas 1-10 (fila real 602-639px, centro y=620). Columnas:
+        // 1=157 2=254 3=337 4=434 5=550 6=679 7=748 8=831 9=914 10=1113
+        $this->marcarCasillasNumeradas(
+            $pdf,
+            $historia?->antecedentes_familiares_check ?? [],
+            [1 => 157, 2 => 254, 3 => 337, 4 => 434, 5 => 550, 6 => 679, 7 => 748, 8 => 831, 9 => 914, 10 => 1113],
+            620
+        );
 
         // ── F. CONSTANTES VITALES ── (celdas de valor, banda real 783.1-809.3px)
         $pdf->SetFont('Helvetica', '', 7);
@@ -178,6 +204,12 @@ class Formulario033Service
         // ── G. EXAMEN ESTOMATOGNÁTICO ── (banda 823.5-1046.6px, texto desde 906px, debajo de las 2 filas de labels)
         $texto = trim(($historia?->examen_extraoral ?? '') . ' ' . ($historia?->examen_intraoral ?? ''));
         $this->escribirMultilinea($pdf, $this->x(60), $this->y(906), $this->x(1117), $texto);
+        // Casillas 1-13: 2 filas (impares arriba y=861, pares abajo y=888).
+        // Columnas compartidas entre ambas filas (centro, px):
+        // 1/2=171  3/4=310  5/6=420  7/8=610  9/10=762  11/12=887  13=1113(solo fila impar)
+        $examenMarcados = $historia?->examen_estomatognatico_check ?? [];
+        $this->marcarCasillasNumeradas($pdf, $examenMarcados, [1 => 171, 3 => 310, 5 => 420, 7 => 610, 9 => 762, 11 => 887, 13 => 1113], 861);
+        $this->marcarCasillasNumeradas($pdf, $examenMarcados, [2 => 171, 4 => 310, 6 => 420, 8 => 610, 10 => 762, 12 => 887], 888);
 
         // ── H. ODONTOGRAMA — marcar piezas ──
         $this->marcarOdontograma($pdf, $tratamientos);
@@ -189,9 +221,15 @@ class Formulario033Service
         // oscuros (no a ojo). Bordes de fila reales (px):
         // 1499 / 1526 / 1552 / 1578 / 1606 / 1639 / 1681 → se usa el centro
         // de cada fila para que el valor no choque con las líneas guía.
+        // NOTA: hos_placa/hos_calculo/hos_gingivitis YA NO vienen indexados
+        // por número de pieza (16, 11, 26...) — el frontend los guarda como
+        // array secuencial por POSICIÓN de fila (0, 1, 2, 3, 4, 5), en el
+        // mismo orden de las filas del formulario: 0=fila 16, 1=fila 11,
+        // 2=fila 26, 3=fila 36, 4=fila 31, 5=fila 46. Verificado en tinker:
+        // dd(...) mostró ["hos_placa" => [0 => "1"]], no [16 => "1"].
         $hosFilas = [
-            16 => 1512, 11 => 1539, 26 => 1565,
-            36 => 1592, 31 => 1622, 46 => 1660,
+            0 => 1512, 1 => 1539, 2 => 1565,
+            3 => 1592, 4 => 1622, 5 => 1660,
         ];
         // Columnas (centro de celda, px): PLACA=268 CÁLCULO=323 GINGIVITIS=378
         // (bordes reales: 241 / 296 / 351 / 406)
@@ -199,11 +237,11 @@ class Formulario033Service
         $hosCalculoData    = $historia?->hos_calculo ?? [];
         $hosGingivitisData = $historia?->hos_gingivitis ?? [];
 
-        foreach ($hosFilas as $pieza => $yPx) {
+        foreach ($hosFilas as $indiceFila => $yPx) {
             $yMm = $this->y($yPx);
-            $vPlaca      = $hosPlacaData[(string)$pieza] ?? $hosPlacaData[$pieza] ?? '';
-            $vCalculo    = $hosCalculoData[(string)$pieza] ?? $hosCalculoData[$pieza] ?? '';
-            $vGingivitis = $hosGingivitisData[(string)$pieza] ?? $hosGingivitisData[$pieza] ?? '';
+            $vPlaca      = $hosPlacaData[$indiceFila] ?? '';
+            $vCalculo    = $hosCalculoData[$indiceFila] ?? '';
+            $vGingivitis = $hosGingivitisData[$indiceFila] ?? '';
             if ($vPlaca !== '')      $this->escribirCentrado($pdf, $this->x(268), $yMm, (string)$vPlaca, 7, [0, 0, 0]);
             if ($vCalculo !== '')    $this->escribirCentrado($pdf, $this->x(323), $yMm, (string)$vCalculo, 7, [0, 0, 0]);
             if ($vGingivitis !== '') $this->escribirCentrado($pdf, $this->x(378), $yMm, (string)$vGingivitis, 7, [0, 0, 0]);
@@ -245,6 +283,16 @@ class Formulario033Service
         $fluorosisCoordsY = ['Leve' => 1473, 'Moderada' => 1499, 'Severa' => 1525];
         if (isset($fluorosisCoordsY[$fluorosis])) {
             $this->escribirCentrado($pdf, $this->x(775), $this->y($fluorosisCoordsY[$fluorosis]), 'X', 7, [0, 0, 0]);
+        }
+
+        // Enfermedad periodontal (LEVE/MODERADA/SEVERA): mismo patrón que
+        // oclusión/fluorosis, misma banda de filas (1473/1499/1525).
+        // Columna de casilla (centro, px): 523 (bordes reales 490-557,
+        // bloque ENFERMEDAD PERIODONTAL = label 407-490 + casilla 490-557).
+        $enfermedadPeriodontal = $historia?->enfermedad_periodontal ?? '';
+        $enfermedadCoordsY = ['Leve' => 1473, 'Moderada' => 1499, 'Severa' => 1525];
+        if (isset($enfermedadCoordsY[$enfermedadPeriodontal])) {
+            $this->escribirCentrado($pdf, $this->x(523), $this->y($enfermedadCoordsY[$enfermedadPeriodontal]), 'X', 7, [0, 0, 0]);
         }
 
         // ── J. ÍNDICES CPO-ceo ── (PÁGINA 1, misma banda que I, mitad
@@ -390,6 +438,24 @@ class Formulario033Service
         $pdf->Write($size * 0.352778, $texto);
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetFont('Helvetica', '', 7);
+    }
+
+    /**
+     * Marca con "X" las casillas numeradas de las secciones D, E y G
+     * (antecedentes personales/familiares, examen estomatognático). Cada
+     * sección guarda un array plano con los números de ítem marcados
+     * (ej. [1, 8]), tal como los manda el checkbox group del formulario
+     * (name="...[]" value="numero"). $columnasXPorNumero mapea cada
+     * número de ítem a su columna medida sobre la plantilla; $yPx es la
+     * fila (compartida por todos los ítems de esa llamada).
+     */
+    private function marcarCasillasNumeradas(Fpdi $pdf, array $marcados, array $columnasXPorNumero, float $yPx): void
+    {
+        foreach ($columnasXPorNumero as $numero => $xPx) {
+            if (in_array((string) $numero, array_map('strval', $marcados), true)) {
+                $this->escribirCentrado($pdf, $this->x($xPx), $this->y($yPx), 'X', 7, [0, 0, 0]);
+            }
+        }
     }
 
     /**

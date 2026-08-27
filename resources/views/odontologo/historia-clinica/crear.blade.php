@@ -106,15 +106,47 @@
                     {{-- D/E. ANTECEDENTES --}}
                     <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
                         <h3 class="font-bold text-slate-900">D/E. Antecedentes patológicos</h3>
+                        @php
+                            $itemsPersonales = [
+                                1 => 'Alergia antibiótico', 2 => 'Alergia anestesia', 3 => 'Hemorragias',
+                                4 => 'VIH/SIDA', 5 => 'Tuberculosis', 6 => 'Asma', 7 => 'Diabetes',
+                                8 => 'Hipertensión arterial', 9 => 'Enf. cardiaca', 10 => 'Otro',
+                            ];
+                            $itemsFamiliares = [
+                                1 => 'Cardiopatía', 2 => 'Hipertensión arterial', 3 => 'Enf. C. vascular',
+                                4 => 'Endócrino metabólico', 5 => 'Cáncer', 6 => 'Tuberculosis',
+                                7 => 'Enf. mental', 8 => 'Enf. infecciosa', 9 => 'Mal formación', 10 => 'Otro',
+                            ];
+                        @endphp
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Antecedentes personales</label>
+                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Antecedentes personales — marcar los que apliquen</label>
+                                <div class="grid grid-cols-2 gap-1.5 mb-2">
+                                    @foreach($itemsPersonales as $num => $label)
+                                        <label class="flex items-center gap-1.5 text-xs text-slate-600">
+                                            <input type="checkbox" name="antecedentes_personales_check[]" value="{{ $num }}"
+                                                {{ in_array($num, old('antecedentes_personales_check', [])) ? 'checked' : '' }}
+                                                class="rounded border-slate-300 text-blue-600 focus:ring-blue-400">
+                                            {{ $num }}. {{ $label }}
+                                        </label>
+                                    @endforeach
+                                </div>
                                 <textarea name="antecedentes_personales" rows="4"
                                     placeholder="Alergias, enfermedades crónicas, medicamentos, cirugías previas..."
                                     class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">{{ old('antecedentes_personales', $paciente?->enfermedades_cronicas) }}</textarea>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Antecedentes familiares</label>
+                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Antecedentes familiares — marcar los que apliquen</label>
+                                <div class="grid grid-cols-2 gap-1.5 mb-2">
+                                    @foreach($itemsFamiliares as $num => $label)
+                                        <label class="flex items-center gap-1.5 text-xs text-slate-600">
+                                            <input type="checkbox" name="antecedentes_familiares_check[]" value="{{ $num }}"
+                                                {{ in_array($num, old('antecedentes_familiares_check', [])) ? 'checked' : '' }}
+                                                class="rounded border-slate-300 text-blue-600 focus:ring-blue-400">
+                                            {{ $num }}. {{ $label }}
+                                        </label>
+                                    @endforeach
+                                </div>
                                 <textarea name="antecedentes_familiares" rows="4"
                                     placeholder="Diabetes, hipertensión, cardiopatías, cáncer..."
                                     class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">{{ old('antecedentes_familiares') }}</textarea>
@@ -156,6 +188,27 @@
                     {{-- G. EXAMEN CLÍNICO --}}
                     <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
                         <h3 class="font-bold text-slate-900">G. Examen del sistema estomatognático</h3>
+                        @php
+                            $itemsExamen = [
+                                1 => 'Labios', 2 => 'Mejillas', 3 => 'Maxilar superior', 4 => 'Maxilar inferior',
+                                5 => 'Lengua', 6 => 'Paladar', 7 => 'Piso de la boca', 8 => 'Carrillos',
+                                9 => 'Glándulas salivales', 10 => 'Oro faringe', 11 => 'A.T.M.',
+                                12 => 'Ganglios', 13 => 'Otros',
+                            ];
+                        @endphp
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Marcar la región afectada</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-2">
+                                @foreach($itemsExamen as $num => $label)
+                                    <label class="flex items-center gap-1.5 text-xs text-slate-600">
+                                        <input type="checkbox" name="examen_estomatognatico_check[]" value="{{ $num }}"
+                                            {{ in_array($num, old('examen_estomatognatico_check', [])) ? 'checked' : '' }}
+                                            class="rounded border-slate-300 text-blue-600 focus:ring-blue-400">
+                                        {{ $num }}. {{ $label }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1.5">Examen extraoral</label>
                             <textarea name="examen_extraoral" rows="3"
@@ -257,7 +310,17 @@
                         </div>
 
                         {{-- Enfermedad Periodontal --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Enfermedad periodontal</label>
+                                <select name="enfermedad_periodontal"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    <option value="">Selecciona</option>
+                                    <option value="Leve" {{ old('enfermedad_periodontal') == 'Leve' ? 'selected' : '' }}>Leve</option>
+                                    <option value="Moderada" {{ old('enfermedad_periodontal') == 'Moderada' ? 'selected' : '' }}>Moderada</option>
+                                    <option value="Severa" {{ old('enfermedad_periodontal') == 'Severa' ? 'selected' : '' }}>Severa</option>
+                                </select>
+                            </div>
                             <div>
                                 <label class="block text-xs font-medium text-slate-500 mb-1.5">Tipo de oclusión</label>
                                 <select name="tipo_oclusion"

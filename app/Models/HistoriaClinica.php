@@ -18,13 +18,16 @@ class HistoriaClinica extends Model
         'motivo_consulta',
         'enfermedad_actual',
         'antecedentes_personales',
+        'antecedentes_personales_check',
         'antecedentes_familiares',
+        'antecedentes_familiares_check',
         'temperatura',
         'pulso',
         'frecuencia_respiratoria',
         'presion_arterial',
         'examen_extraoral',
         'examen_intraoral',
+        'examen_estomatognatico_check',
         'diagnostico_inicial',
         'completado',
         'segundo_nombre',
@@ -45,7 +48,8 @@ class HistoriaClinica extends Model
         'examenes_rayos_x',
         'examenes_otros',
         'examenes_informe',
-        'hos_examinada', 
+        'hos_examinada',
+        'enfermedad_periodontal',
     ];
 
     protected $casts = [
@@ -60,6 +64,9 @@ class HistoriaClinica extends Model
         'examenes_quimica'   => 'boolean',
         'examenes_rayos_x'   => 'boolean',
         'hos_examinada' => 'array',
+        'antecedentes_personales_check' => 'array',
+        'antecedentes_familiares_check' => 'array',
+        'examen_estomatognatico_check'  => 'array',
     ];
 
     public function paciente()

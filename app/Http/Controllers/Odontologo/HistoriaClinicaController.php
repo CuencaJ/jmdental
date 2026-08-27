@@ -43,11 +43,18 @@ class HistoriaClinicaController extends Controller
         $hosGingivitis = $this->filtrarHos($request->hos_gingivitis ?? []);
         $hosExaminada  = $request->hos_examinada ?? [];
 
+        $antPersonalesCheck = $request->antecedentes_personales_check ?? [];
+        $antFamiliaresCheck = $request->antecedentes_familiares_check ?? [];
+        $examenCheck        = $request->examen_estomatognatico_check ?? [];
+
         $validated = $request->validate([
             'motivo_consulta'            => 'required|string|max:500',
             'enfermedad_actual'          => 'nullable|string',
             'antecedentes_personales'    => 'nullable|string',
             'antecedentes_familiares'    => 'nullable|string',
+            'antecedentes_personales_check' => 'nullable|array',
+            'antecedentes_familiares_check' => 'nullable|array',
+            'examen_estomatognatico_check'  => 'nullable|array',
             'temperatura'                => 'nullable|string|max:10',
             'pulso'                      => 'nullable|string|max:10',
             'frecuencia_respiratoria'    => 'nullable|string|max:10',
@@ -77,6 +84,7 @@ class HistoriaClinicaController extends Controller
             'examenes_rayos_x'           => 'nullable|boolean',
             'examenes_otros'             => 'nullable|string|max:255',
             'examenes_informe'           => 'nullable|string',
+            'enfermedad_periodontal'     => 'nullable|string|max:20',
         ]);
 
         HistoriaClinica::create([
@@ -87,6 +95,9 @@ class HistoriaClinicaController extends Controller
             'enfermedad_actual'       => $validated['enfermedad_actual'] ?? null,
             'antecedentes_personales' => $validated['antecedentes_personales'] ?? null,
             'antecedentes_familiares' => $validated['antecedentes_familiares'] ?? null,
+            'antecedentes_personales_check' => !empty($antPersonalesCheck) ? $antPersonalesCheck : null,
+            'antecedentes_familiares_check' => !empty($antFamiliaresCheck) ? $antFamiliaresCheck : null,
+            'examen_estomatognatico_check'  => !empty($examenCheck) ? $examenCheck : null,
             'temperatura'             => $validated['temperatura'] ?? null,
             'pulso'                   => $validated['pulso'] ?? null,
             'frecuencia_respiratoria' => $validated['frecuencia_respiratoria'] ?? null,
@@ -118,6 +129,7 @@ class HistoriaClinicaController extends Controller
             'examenes_otros'          => $validated['examenes_otros'] ?? null,
             'examenes_informe'        => $validated['examenes_informe'] ?? null,
             'completado'              => true,
+            'enfermedad_periodontal'  => $validated['enfermedad_periodontal'] ?? null,
         ]);
 
         return redirect()->route('odontologo.pacientes.show', $pacienteId)
@@ -156,11 +168,18 @@ class HistoriaClinicaController extends Controller
         $hosGingivitis = $this->filtrarHos($request->hos_gingivitis ?? []);
         $hosExaminada  = $request->hos_examinada ?? [];
 
+        $antPersonalesCheck = $request->antecedentes_personales_check ?? [];
+        $antFamiliaresCheck = $request->antecedentes_familiares_check ?? [];
+        $examenCheck        = $request->examen_estomatognatico_check ?? [];
+
         $validated = $request->validate([
             'motivo_consulta'            => 'required|string|max:500',
             'enfermedad_actual'          => 'nullable|string',
             'antecedentes_personales'    => 'nullable|string',
             'antecedentes_familiares'    => 'nullable|string',
+            'antecedentes_personales_check' => 'nullable|array',
+            'antecedentes_familiares_check' => 'nullable|array',
+            'examen_estomatognatico_check'  => 'nullable|array',
             'temperatura'                => 'nullable|string|max:10',
             'pulso'                      => 'nullable|string|max:10',
             'frecuencia_respiratoria'    => 'nullable|string|max:10',
@@ -190,6 +209,7 @@ class HistoriaClinicaController extends Controller
             'examenes_rayos_x'           => 'nullable|boolean',
             'examenes_otros'             => 'nullable|string|max:255',
             'examenes_informe'           => 'nullable|string',
+            'enfermedad_periodontal'     => 'nullable|string|max:20',
         ]);
 
         $historia->update([
@@ -197,6 +217,9 @@ class HistoriaClinicaController extends Controller
             'enfermedad_actual'       => $validated['enfermedad_actual'] ?? null,
             'antecedentes_personales' => $validated['antecedentes_personales'] ?? null,
             'antecedentes_familiares' => $validated['antecedentes_familiares'] ?? null,
+            'antecedentes_personales_check' => !empty($antPersonalesCheck) ? $antPersonalesCheck : $historia->antecedentes_personales_check,
+            'antecedentes_familiares_check' => !empty($antFamiliaresCheck) ? $antFamiliaresCheck : $historia->antecedentes_familiares_check,
+            'examen_estomatognatico_check'  => !empty($examenCheck) ? $examenCheck : $historia->examen_estomatognatico_check,
             'temperatura'             => $validated['temperatura'] ?? null,
             'pulso'                   => $validated['pulso'] ?? null,
             'frecuencia_respiratoria' => $validated['frecuencia_respiratoria'] ?? null,
@@ -227,6 +250,7 @@ class HistoriaClinicaController extends Controller
             'examenes_rayos_x'        => $request->has('examenes_rayos_x'),
             'examenes_otros'          => $validated['examenes_otros'] ?? null,
             'examenes_informe'        => $validated['examenes_informe'] ?? null,
+            'enfermedad_periodontal'  => $validated['enfermedad_periodontal'] ?? null,
         ]);
 
         return redirect()->route('odontologo.historia.edit', $pacienteId)
