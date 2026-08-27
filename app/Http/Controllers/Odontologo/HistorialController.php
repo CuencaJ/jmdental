@@ -3,130 +3,188 @@
 namespace App\Http\Controllers\Odontologo;
 
 use App\Http\Controllers\Controller;
-use App\Models\ArchivoTratamiento;
+use App\Models\HistoriaClinica;
 use App\Models\Odontologo;
 use App\Models\Paciente;
 use App\Models\Tratamiento;
-use App\Models\TratamientoPieza;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
-class HistorialController extends Controller
+class HistoriaClinicaController extends Controller
 {
-    public function index()
+    // Mostrar formulario para llenar la historia clínica inicial
+    public function create($pacienteId)
     {
+        $usuario    = User::role('paciente')->with('paciente')->findOrFail($pacienteId);
+        $paciente   = $usuario->paciente;
         $odontologo = Odontologo::where('user_id', Auth::id())->first();
 
-        $pacientes = Paciente::with(['user', 'citas' => function ($q) use ($odontologo) {
-            $q->when($odontologo, fn ($q) => $q->where('odontologo_id', $odontologo->id))
-              ->with(['tratamiento.archivos', 'tratamiento.piezas']);
-        }])
-        ->whereHas('citas', fn ($q) => $q->when($odontologo, fn ($q) => $q->where('odontologo_id', $odontologo->id)))
+        if ($paciente && $paciente->historiaClinica) {
+            return redirect()->route('odontologo.historia.edit', $pacienteId)
+                ->with('info', 'Este paciente ya tiene una historia clínica. Puedes editarla aquí.');
+        }
+
+        return view('odontologo.historia-clinica.crear', compact('usuario', 'paciente', 'odontologo'));
+    }
+
+    // Guardar historia clínica inicial
+    public function store(Request $request, $pacienteId)
+    {
+        $usuario    = User::role('paciente')->with('paciente')->findOrFail($pacienteId);
+        $paciente   = $usuario->paciente;
+        $odontologo = Odontologo::where('user_id', Auth::id())->first();
+
+        $validated = $request->validate([
+            'motivo_consulta'         => 'required|string|max:500',
+            'enfermedad_actual'       => 'nullable|string',
+            'antecedentes_personales' => 'nullable|string',
+            'antecedentes_familiares' => 'nullable|string',
+            'temperatura'             => 'nullable|string|max:10',
+            'pulso'                   => 'nullable|string|max:10',
+            'frecuencia_respiratoria' => 'nullable|string|max:10',
+            'presion_arterial'        => 'nullable|string|max:20',
+            'examen_extraoral'        => 'nullable|string',
+            'examen_intraoral'        => 'nullable|string',
+            'diagnostico_inicial'     => 'nullable|string',
+            'segundo_nombre'          => 'nullable|string|max:100',
+            'segundo_apellido'        => 'nullable|string|max:100',
+            'embarazada'              => 'nullable|boolean',
+            'condicion_edad'          => 'nullable|string|max:10',
+            'hos_placa'               => 'nullable|array',
+            'hos_calculo'             => 'nullable|array',
+            'hos_gingivitis'          => 'nullable|array',
+            'tipo_oclusion'           => 'nullable|string|max:20',
+            'nivel_fluorosis'         => 'nullable|string|max:20',
+            'cpo_c'                   => 'nullable|integer|min:0',
+            'cpo_p'                   => 'nullable|integer|min:0',
+            'cpo_o'                   => 'nullable|integer|min:0',
+            'ceo_c'                   => 'nullable|integer|min:0',
+            'ceo_e'                   => 'nullable|integer|min:0',
+            'ceo_o'                   => 'nullable|integer|min:0',
+        ]);
+
+        HistoriaClinica::create([
+            'paciente_id'             => $paciente->id,
+            'odontologo_id'           => $odontologo->id,
+            'fecha_apertura'          => now()->toDateString(),
+            'motivo_consulta'         => $validated['motivo_consulta'],
+            'enfermedad_actual'       => $validated['enfermedad_actual'] ?? null,
+            'antecedentes_personales' => $validated['antecedentes_personales'] ?? null,
+            'antecedentes_familiares' => $validated['antecedentes_familiares'] ?? null,
+            'temperatura'             => $validated['temperatura'] ?? null,
+            'pulso'                   => $validated['pulso'] ?? null,
+            'frecuencia_respiratoria' => $validated['frecuencia_respiratoria'] ?? null,
+            'presion_arterial'        => $validated['presion_arterial'] ?? null,
+            'examen_extraoral'        => $validated['examen_extraoral'] ?? null,
+            'examen_intraoral'        => $validated['examen_intraoral'] ?? null,
+            'diagnostico_inicial'     => $validated['diagnostico_inicial'] ?? null,
+            'segundo_nombre'          => $validated['segundo_nombre'] ?? null,
+            'segundo_apellido'        => $validated['segundo_apellido'] ?? null,
+            'embarazada'              => $request->embarazada ?? false,
+            'condicion_edad'          => $validated['condicion_edad'] ?? 'anios',
+            'hos_placa'               => $validated['hos_placa'] ?? null,
+            'hos_calculo'             => $validated['hos_calculo'] ?? null,
+            'hos_gingivitis'          => $validated['hos_gingivitis'] ?? null,
+            'tipo_oclusion'           => $validated['tipo_oclusion'] ?? null,
+            'nivel_fluorosis'         => $validated['nivel_fluorosis'] ?? null,
+            'cpo_c'                   => $validated['cpo_c'] ?? 0,
+            'cpo_p'                   => $validated['cpo_p'] ?? 0,
+            'cpo_o'                   => $validated['cpo_o'] ?? 0,
+            'ceo_c'                   => $validated['ceo_c'] ?? 0,
+            'ceo_e'                   => $validated['ceo_e'] ?? 0,
+            'ceo_o'                   => $validated['ceo_o'] ?? 0,
+            'completado'              => true,
+        ]);
+
+        return redirect()->route('odontologo.pacientes.show', $pacienteId)
+            ->with('mensaje', 'Historia clínica inicial registrada correctamente.');
+    }
+
+    // Ver/editar historia clínica existente
+    public function edit($pacienteId)
+    {
+        $usuario    = User::role('paciente')->with('paciente.historiaClinica')->findOrFail($pacienteId);
+        $paciente   = $usuario->paciente;
+        $historia   = $paciente?->historiaClinica;
+        $odontologo = Odontologo::where('user_id', Auth::id())->first();
+
+        $tratamientos = Tratamiento::whereHas('cita', fn($q) =>
+            $q->where('paciente_id', $paciente?->id)
+        )->with(['cita.odontologo.user', 'piezas'])
+        ->orderBy('fecha_tratamiento')
         ->get();
 
-        return view('odontologo.historial', compact('pacientes'));
+        return view('odontologo.historia-clinica.ver', compact(
+            'usuario', 'paciente', 'historia', 'odontologo', 'tratamientos'
+        ));
     }
 
-    public function ver($id)
+    // Actualizar historia clínica
+    public function update(Request $request, $pacienteId)
     {
-        $tratamiento = Tratamiento::with([
-            'cita.paciente.user',
-            'archivos',
-            'piezas'
-        ])->findOrFail($id);
+        $usuario  = User::role('paciente')->with('paciente.historiaClinica')->findOrFail($pacienteId);
+        $historia = $usuario->paciente?->historiaClinica;
 
-        return view('odontologo.vertratamiento', compact('tratamiento'));
-    }
+        if (!$historia) {
+            return redirect()->route('odontologo.historia.create', $pacienteId);
+        }
 
-    public function editar($id)
-    {
-        $tratamiento = Tratamiento::with([
-            'cita.paciente.user',
-            'archivos',
-            'piezas'
-        ])->findOrFail($id);
-
-        return view('odontologo.editartratamiento', compact('tratamiento'));
-    }
-
-    public function actualizar(Request $request, $id)
-    {
         $validated = $request->validate([
-            'nombre'        => 'required|string|max:255',
-            'descripcion'   => 'nullable|string',
-            'costo'         => 'nullable|numeric|min:0',
-            'observaciones' => 'nullable|string',
-            'archivos.*'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'piezas'        => 'nullable|array',
-            'piezas.*.pieza_numero'   => 'required|integer',
-            'piezas.*.tipo_denticion' => 'required|in:permanente,temporal',
-            'piezas.*.cara'           => 'nullable|string|max:50',
-            'piezas.*.procedimiento'  => 'nullable|string|max:255',
-            'piezas.*.diagnostico'    => 'nullable|string|max:255',
-            'piezas.*.ausente'        => 'nullable|boolean',
-            // Formulario 033, sección H: "MOVILIDAD Y RECESIÓN: MARCAR
-            // (1, 2, 3 ó 4), SI APLICA". Llegan como string ('', '1'..'4')
-            // desde los inputs ocultos del odontograma.
-            'piezas.*.movilidad'      => 'nullable|string|in:,1,2,3,4',
-            'piezas.*.recesion'       => 'nullable|string|in:,1,2,3,4',
+            'motivo_consulta'         => 'required|string|max:500',
+            'enfermedad_actual'       => 'nullable|string',
+            'antecedentes_personales' => 'nullable|string',
+            'antecedentes_familiares' => 'nullable|string',
+            'temperatura'             => 'nullable|string|max:10',
+            'pulso'                   => 'nullable|string|max:10',
+            'frecuencia_respiratoria' => 'nullable|string|max:10',
+            'presion_arterial'        => 'nullable|string|max:20',
+            'examen_extraoral'        => 'nullable|string',
+            'examen_intraoral'        => 'nullable|string',
+            'diagnostico_inicial'     => 'nullable|string',
+            'segundo_nombre'          => 'nullable|string|max:100',
+            'segundo_apellido'        => 'nullable|string|max:100',
+            'embarazada'              => 'nullable|boolean',
+            'condicion_edad'          => 'nullable|string|max:10',
+            'hos_placa'               => 'nullable|array',
+            'hos_calculo'             => 'nullable|array',
+            'hos_gingivitis'          => 'nullable|array',
+            'tipo_oclusion'           => 'nullable|string|max:20',
+            'nivel_fluorosis'         => 'nullable|string|max:20',
+            'cpo_c'                   => 'nullable|integer|min:0',
+            'cpo_p'                   => 'nullable|integer|min:0',
+            'cpo_o'                   => 'nullable|integer|min:0',
+            'ceo_c'                   => 'nullable|integer|min:0',
+            'ceo_e'                   => 'nullable|integer|min:0',
+            'ceo_o'                   => 'nullable|integer|min:0',
         ]);
 
-        $tratamiento = Tratamiento::findOrFail($id);
+        $historia->update(array_merge($validated, [
+            'embarazada'     => $request->embarazada ?? false,
+            'condicion_edad' => $validated['condicion_edad'] ?? 'anios',
+        ]));
 
-        $tratamiento->update([
-            'nombre'        => $validated['nombre'],
-            'descripcion'   => $validated['descripcion'],
-            'costo'         => $validated['costo'] ?? 0,
-            'observaciones' => $validated['observaciones'],
-            'estado'        => 'completado',
-        ]);
-
-        // Subida de archivos
-        if ($request->hasFile('archivos')) {
-            foreach ($request->file('archivos') as $archivo) {
-                $ruta = $archivo->store('tratamientos/' . $tratamiento->id, 'public');
-                ArchivoTratamiento::create([
-                    'tratamiento_id'  => $tratamiento->id,
-                    'nombre_archivo'  => $archivo->getClientOriginalName(),
-                    'ruta_archivo'    => $ruta,
-                    'tipo_archivo'    => $archivo->getClientMimeType(),
-                    'tamanio_archivo' => $archivo->getSize(),
-                    'descripcion'     => null,
-                ]);
-            }
-        }
-
-        // Guardar piezas dentales
-        if (!empty($validated['piezas'])) {
-            // Eliminar las piezas anteriores y reemplazar
-            TratamientoPieza::where('tratamiento_id', $tratamiento->id)->delete();
-            foreach ($validated['piezas'] as $pieza) {
-                TratamientoPieza::create([
-                    'tratamiento_id'  => $tratamiento->id,
-                    'pieza_numero'    => $pieza['pieza_numero'],
-                    'tipo_denticion'  => $pieza['tipo_denticion'],
-                    'cara'            => $pieza['cara'] ?? null,
-                    'procedimiento'   => $pieza['procedimiento'] ?? null,
-                    'diagnostico'     => $pieza['diagnostico'] ?? null,
-                    'ausente'         => ($pieza['ausente'] ?? '0') === '1',
-                    'movilidad'       => ($pieza['movilidad'] ?? '') !== '' ? $pieza['movilidad'] : null,
-                    'recesion'        => ($pieza['recesion'] ?? '') !== '' ? $pieza['recesion'] : null,
-                ]);
-            }
-        }
-
-        return redirect()->route('odontologo.historial')->with('mensaje', 'Tratamiento guardado correctamente.');
+        return redirect()->route('odontologo.historia.edit', $pacienteId)
+            ->with('mensaje', 'Historia clínica actualizada correctamente.');
     }
 
-    public function eliminarArchivo($id)
+    // Descargar formulario 033 PDF completo
+    public function pdf($pacienteId)
     {
-        $archivo = ArchivoTratamiento::findOrFail($id);
-        Storage::disk('public')->delete($archivo->ruta_archivo);
-        $tratamientoId = $archivo->tratamiento_id;
-        $archivo->delete();
+        $usuario  = User::role('paciente')->with('paciente.historiaClinica')->findOrFail($pacienteId);
+        $historia = $usuario->paciente?->historiaClinica;
 
-        return redirect()->route('odontologo.historial.editar', $tratamientoId)
-            ->with('mensaje', 'Archivo eliminado.');
+        $tratamientos = \App\Models\Tratamiento::whereHas('cita', fn($q) =>
+            $q->where('paciente_id', $usuario->paciente?->id)
+        )->with(['cita.odontologo.user', 'piezas'])
+        ->orderBy('fecha_tratamiento')
+        ->get();
+
+        $service = new \App\Services\Formulario033Service();
+        $pdf = $service->generar($usuario, $historia, $tratamientos);
+
+        return response($pdf)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="formulario-033-' . \Illuminate\Support\Str::slug($usuario->name) . '.pdf"');
     }
 }

@@ -124,8 +124,12 @@
                                             default      => 'bg-slate-100 text-slate-600',
                                         };
                                     @endphp
+                                    @php
+                                        $tieneHistoria = $cita->paciente?->historiaClinica !== null;
+                                        $pacienteUserId = $cita->paciente?->user_id;
+                                    @endphp
                                     <form action="{{ route('odontologo.citas.estado', $cita->id) }}" method="POST"
-                                        onchange="this.submit()" class="inline-block">
+                                        onchange="verificarHistoria(this, {{ $tieneHistoria ? 'true' : 'false' }}, {{ $pacienteUserId ?? 'null' }})" class="inline-block">
                                         @csrf
                                         @method('PATCH')
                                         <select name="estado"
@@ -198,10 +202,62 @@
     </main>
 </div>
 
+{{-- MODAL: Paciente sin historia clínica --}}
+<div id="modal-sin-historia" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-amber-600">warning</span>
+            </div>
+            <h2 class="text-base font-bold text-slate-900">Historia Clínica pendiente</h2>
+        </div>
+        <p class="text-sm text-slate-600 mb-6">
+            Este paciente no tiene una Historia Clínica registrada. Es necesario llenar el
+            <strong>Formulario 033 MSP</strong> antes de completar la cita.
+        </p>
+        <div class="flex gap-3">
+            <button onclick="cerrarModalHistoria()"
+                class="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-100 border border-slate-200">
+                Cancelar
+            </button>
+            <a id="btn-ir-historia" href="#"
+                class="flex-1 text-center bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold">
+                Llenar Historia Clínica
+            </a>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
 <script>
+    function verificarHistoria(form, tieneHistoria, pacienteUserId) {
+        const select = form.querySelector('select[name="estado"]');
+        if (select.value === 'completada' && !tieneHistoria) {
+            // Evitar el submit automático
+            select.value = select.dataset.anterior || 'confirmada';
+
+            // Mostrar modal de alerta
+            document.getElementById('modal-sin-historia').classList.remove('hidden');
+            document.getElementById('modal-sin-historia').classList.add('flex');
+
+            if (pacienteUserId) {
+                document.getElementById('btn-ir-historia').href =
+                    '{{ url("/odontologo/pacientes") }}/' + pacienteUserId + '/historia/crear';
+            }
+            return false;
+        }
+        // Guardar estado anterior
+        select.dataset.anterior = select.value;
+        form.submit();
+    }
+
+    function cerrarModalHistoria() {
+        document.getElementById('modal-sin-historia').classList.add('hidden');
+        document.getElementById('modal-sin-historia').classList.remove('flex');
+    }
+
     function filtrarPorEstado() {
         const estado = document.getElementById('filtroEstado').value;
         document.querySelectorAll('#tablaCitas tbody tr').forEach(row => {

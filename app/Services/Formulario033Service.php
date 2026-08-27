@@ -182,6 +182,100 @@ class Formulario033Service
         // ── H. ODONTOGRAMA — marcar piezas ──
         $this->marcarOdontograma($pdf, $tratamientos);
 
+        // ── I. INDICADORES DE SALUD BUCAL (HOS) ── (PÁGINA 1, bloque inferior
+        // izquierdo, justo debajo del odontograma — NO en la página 2).
+        // Calibrado rasterizando form033.pdf a 150dpi (pdftoppm -r 150) y
+        // midiendo los bordes reales de celda con detección de píxeles
+        // oscuros (no a ojo). Bordes de fila reales (px):
+        // 1499 / 1526 / 1552 / 1578 / 1606 / 1639 / 1681 → se usa el centro
+        // de cada fila para que el valor no choque con las líneas guía.
+        $hosFilas = [
+            16 => 1512, 11 => 1539, 26 => 1565,
+            36 => 1592, 31 => 1622, 46 => 1660,
+        ];
+        // Columnas (centro de celda, px): PLACA=268 CÁLCULO=323 GINGIVITIS=378
+        // (bordes reales: 241 / 296 / 351 / 406)
+        $hosPlacaData      = $historia?->hos_placa ?? [];
+        $hosCalculoData    = $historia?->hos_calculo ?? [];
+        $hosGingivitisData = $historia?->hos_gingivitis ?? [];
+
+        foreach ($hosFilas as $pieza => $yPx) {
+            $yMm = $this->y($yPx);
+            $vPlaca      = $hosPlacaData[(string)$pieza] ?? $hosPlacaData[$pieza] ?? '';
+            $vCalculo    = $hosCalculoData[(string)$pieza] ?? $hosCalculoData[$pieza] ?? '';
+            $vGingivitis = $hosGingivitisData[(string)$pieza] ?? $hosGingivitisData[$pieza] ?? '';
+            if ($vPlaca !== '')      $this->escribirCentrado($pdf, $this->x(268), $yMm, (string)$vPlaca, 7, [0, 0, 0]);
+            if ($vCalculo !== '')    $this->escribirCentrado($pdf, $this->x(323), $yMm, (string)$vCalculo, 7, [0, 0, 0]);
+            if ($vGingivitis !== '') $this->escribirCentrado($pdf, $this->x(378), $yMm, (string)$vGingivitis, 7, [0, 0, 0]);
+        }
+
+        // Casillas de "pieza examinada" (16/17/55, 11/21/51, 26/27/65,
+        // 36/37/75, 31/41/71, 46/47/85): cada fila trae 3 piezas
+        // alternativas y una casilla en blanco junto a cada una (celda
+        // vacía sin imprimir, a la derecha del número). Se marca con "X"
+        // la(s) pieza(s) presentes en hos_examinada. Columnas de casilla
+        // (centro, px): 97 / 171 / 226 (bordes reales 77-118, 157-185,
+        // 213-240). Mismas filas Y que $hosFilas.
+        $filasPiezas = [
+            1512 => [16, 17, 55], 1539 => [11, 21, 51], 1565 => [26, 27, 65],
+            1592 => [36, 37, 75], 1622 => [31, 41, 71], 1660 => [46, 47, 85],
+        ];
+        $checkboxX = [97, 171, 226];
+        $hosExaminadaData = $historia?->hos_examinada ?? [];
+        foreach ($filasPiezas as $yPx => $piezasFila) {
+            foreach ($piezasFila as $idx => $pieza) {
+                $marcado = $hosExaminadaData[(string)$pieza] ?? $hosExaminadaData[$pieza] ?? null;
+                if ($marcado) {
+                    $this->escribirCentrado($pdf, $this->x($checkboxX[$idx]), $this->y($yPx), 'X', 7, [0, 0, 0]);
+                }
+            }
+        }
+
+        // Tipo de oclusión (ANGLE I/II/III) y nivel de fluorosis (LEVE/
+        // MODERADA/SEVERA): casillas a la derecha de cada etiqueta, en las
+        // mismas 3 filas (bordes reales 1460/1486/1512/1538 → centros
+        // 1473/1499/1525). Columnas de casilla (centro, px): oclusión=665,
+        // fluorosis=775 (bordes reales 652-679 y 762-789).
+        $oclusion = $historia?->tipo_oclusion ?? '';
+        $oclusionCoordsY = ['Angle I' => 1473, 'Angle II' => 1499, 'Angle III' => 1525];
+        if (isset($oclusionCoordsY[$oclusion])) {
+            $this->escribirCentrado($pdf, $this->x(665), $this->y($oclusionCoordsY[$oclusion]), 'X', 7, [0, 0, 0]);
+        }
+        $fluorosis = $historia?->nivel_fluorosis ?? '';
+        $fluorosisCoordsY = ['Leve' => 1473, 'Moderada' => 1499, 'Severa' => 1525];
+        if (isset($fluorosisCoordsY[$fluorosis])) {
+            $this->escribirCentrado($pdf, $this->x(775), $this->y($fluorosisCoordsY[$fluorosis]), 'X', 7, [0, 0, 0]);
+        }
+
+        // ── J. ÍNDICES CPO-ceo ── (PÁGINA 1, misma banda que I, mitad
+        // derecha del bloque inferior). Filas (centro, px): D=1473 d=1524
+        // (bordes reales 1460/1486 y 1512/1538). Columnas (centro, px):
+        // C=852 P=894 O=951 TOTAL=1080 (bordes reales 831/873/915/987/1174).
+        $cpoC = $historia?->cpo_c ?? 0;
+        $cpoP = $historia?->cpo_p ?? 0;
+        $cpoO = $historia?->cpo_o ?? 0;
+        $ceoC = $historia?->ceo_c ?? 0;
+        $ceoE = $historia?->ceo_e ?? 0;
+        $ceoO = $historia?->ceo_o ?? 0;
+
+        $this->escribirCentrado($pdf, $this->x(852),  $this->y(1473), (string)$cpoC, 7, [0, 0, 0]);
+        $this->escribirCentrado($pdf, $this->x(894),  $this->y(1473), (string)$cpoP, 7, [0, 0, 0]);
+        $this->escribirCentrado($pdf, $this->x(951),  $this->y(1473), (string)$cpoO, 7, [0, 0, 0]);
+        // La celda TOTAL (naranja) YA trae un "0" impreso en la plantilla
+        // form033.pdf (no es un campo en blanco). Si se escribe el total
+        // encima, el "0" de la plantilla y el valor calculado se solapan
+        // (ej. "1" real se ve pegado a un "0" fantasma). Se tapa esa celda
+        // con un rectángulo del mismo naranja del template (RGB muestreado
+        // directo del PDF) antes de escribir el valor real.
+        $this->taparCeldaNaranja($pdf, 989, 1462, 1172, 1484);
+        $this->escribirCentrado($pdf, $this->x(1080), $this->y(1473), (string)($cpoC + $cpoP + $cpoO), 7, [0, 0, 0]);
+
+        $this->escribirCentrado($pdf, $this->x(852),  $this->y(1524), (string)$ceoC, 7, [0, 0, 0]);
+        $this->escribirCentrado($pdf, $this->x(894),  $this->y(1524), (string)$ceoE, 7, [0, 0, 0]);
+        $this->escribirCentrado($pdf, $this->x(951),  $this->y(1524), (string)$ceoO, 7, [0, 0, 0]);
+        $this->taparCeldaNaranja($pdf, 989, 1514, 1172, 1536);
+        $this->escribirCentrado($pdf, $this->x(1080), $this->y(1524), (string)($ceoC + $ceoE + $ceoO), 7, [0, 0, 0]);
+
         // ===== PÁGINA 2 =====
         $pdf->AddPage('P', 'A4');
         $tpl2 = $pdf->importPage(2);
@@ -189,8 +283,63 @@ class Formulario033Service
 
         $pdf->SetFont('Helvetica', '', 7);
 
-        // ── N. DIAGNÓSTICO ── (fila "1." en y=351.3px, texto tras el número, x=75px)
-        $this->escribir($pdf, $this->x(75), $this->y(351), $historia?->diagnostico_inicial ?? '');
+        // ── L. PEDIDO DE EXÁMENES COMPLEMENTARIOS ──
+        // Caja de texto libre (3 líneas guía), banda real y=0-105px en el
+        // sistema de referencia de la página 2. Texto arranca debajo del
+        // título (y=26px) con el mismo margen usado en las demás cajas de
+        // texto libre del formulario (C/D/E/G en la página 1).
+        $this->escribirMultilinea($pdf, $this->x(60), $this->y(32), $this->x(1117), $historia?->examenes_pedido ?? '');
+
+        // ── M. INFORME DE EXÁMENES ──
+        // Fila de checkboxes (banda real y=142-166px, centro=154):
+        // BIOMETRIA=171 | QUÍMICA SANGUÍNEA=313 | RAYOS-X=454 | OTROS(check)=595
+        // seguido de un espacio libre (x=620-1170) para el nombre del otro
+        // examen. Debajo, caja de texto libre (banda 166-306px) para el
+        // informe/resultado.
+        $pdf->SetFont('Helvetica', '', 7);
+        if ($historia?->examenes_biometria) {
+            $this->escribirCentrado($pdf, $this->x(171), $this->y(154), 'X', 8, [0, 0, 0]);
+        }
+        if ($historia?->examenes_quimica) {
+            $this->escribirCentrado($pdf, $this->x(313), $this->y(154), 'X', 8, [0, 0, 0]);
+        }
+        if ($historia?->examenes_rayos_x) {
+            $this->escribirCentrado($pdf, $this->x(454), $this->y(154), 'X', 8, [0, 0, 0]);
+        }
+        $examenesOtros = $historia?->examenes_otros ?? '';
+        if ($examenesOtros !== '') {
+            $this->escribirCentrado($pdf, $this->x(595), $this->y(154), 'X', 8, [0, 0, 0]);
+            $this->escribir($pdf, $this->x(625), $this->y(150), $examenesOtros);
+        }
+        $this->escribirMultilinea($pdf, $this->x(60), $this->y(170), $this->x(1117), $historia?->examenes_informe ?? '');
+
+        // ── N. DIAGNÓSTICO (6 filas con CIE, PRE, DEF) ──
+        // Coordenadas Y de cada fila en la página 2 (px)
+        $diagFilasY = [351, 393, 435];  // filas 1,2,3 lado izquierdo
+        $diagFilasYder = [351, 393, 435]; // filas 4,5,6 lado derecho
+        $diagnosticos = $historia?->diagnosticos ?? [];
+
+        $pdf->SetFont('Helvetica', '', 6.5);
+        for ($i = 0; $i < 3; $i++) {
+            $diag = $diagnosticos[$i] ?? [];
+            $desc = $diag['descripcion'] ?? '';
+            $cie  = $diag['cie'] ?? '';
+            $tipo = $diag['tipo'] ?? '';
+            if ($desc) $this->escribir($pdf, $this->x(75),  $this->y($diagFilasY[$i]), $this->limpiar($desc));
+            if ($cie)  $this->escribir($pdf, $this->x(490), $this->y($diagFilasY[$i]), $this->limpiar($cie));
+            if ($tipo === 'pre') $this->escribirCentrado($pdf, $this->x(560), $this->y($diagFilasY[$i] + 5), 'X', 7, [0,0,0]);
+            if ($tipo === 'def') $this->escribirCentrado($pdf, $this->x(610), $this->y($diagFilasY[$i] + 5), 'X', 7, [0,0,0]);
+        }
+        for ($i = 3; $i < 6; $i++) {
+            $diag = $diagnosticos[$i] ?? [];
+            $desc = $diag['descripcion'] ?? '';
+            $cie  = $diag['cie'] ?? '';
+            $tipo = $diag['tipo'] ?? '';
+            if ($desc) $this->escribir($pdf, $this->x(640), $this->y($diagFilasYder[$i-3]), $this->limpiar($desc));
+            if ($cie)  $this->escribir($pdf, $this->x(1055), $this->y($diagFilasYder[$i-3]), $this->limpiar($cie));
+            if ($tipo === 'pre') $this->escribirCentrado($pdf, $this->x(1125), $this->y($diagFilasYder[$i-3] + 5), 'X', 7, [0,0,0]);
+            if ($tipo === 'def') $this->escribirCentrado($pdf, $this->x(1175), $this->y($diagFilasYder[$i-3] + 5), 'X', 7, [0,0,0]);
+        }
 
         // ── O. DATOS PROFESIONAL ── (fila de datos y=500px, debajo de los labels en 472.7px)
         $this->escribir($pdf, $this->x(76),  $this->y(500), $historia?->fecha_apertura?->format('Y-m-d') ?? now()->format('Y-m-d'));
@@ -241,6 +390,20 @@ class Formulario033Service
         $pdf->Write($size * 0.352778, $texto);
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetFont('Helvetica', '', 7);
+    }
+
+    /**
+     * Tapa una celda de la plantilla (coords en px del sistema de
+     * referencia 1241x1754) con el mismo naranja que usa form033.pdf en
+     * los recuadros TOTAL de la sección J (RGB 249,206,153, muestreado
+     * directo del PDF renderizado). Se usa para poder "reescribir" encima
+     * de un valor que la plantilla ya trae impreso, sin dejar el dígito
+     * viejo asomando debajo del nuevo.
+     */
+    private function taparCeldaNaranja(Fpdi $pdf, float $x1Px, float $y1Px, float $x2Px, float $y2Px): void
+    {
+        $pdf->SetFillColor(249, 206, 153);
+        $pdf->Rect($this->x($x1Px), $this->y($y1Px), $this->x($x2Px) - $this->x($x1Px), $this->y($y2Px) - $this->y($y1Px), 'F');
     }
 
     private function limpiar(string $texto): string

@@ -73,13 +73,31 @@
             {{-- ACCIONES RÁPIDAS --}}
             <div class="flex flex-wrap gap-3">
                 @if($usuario->hasRole('paciente'))
-                    {{-- Ver Historial Clínico --}}
-                    <a href="{{ Auth::user()->hasRole('odontologo')
-                        ? route('odontologo.pacientes.historial', $usuario->id)
-                        : route('recepcionista.pacientes.historial', $usuario->id) }}"
-                        class="flex items-center gap-2 bg-white border border-slate-200 text-slate-900 font-semibold text-sm px-5 py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined">folder_shared</span>
-                        Ver Historial Clínico
+
+                    {{-- Historia Clínica — siempre visible --}}
+                    @php
+                        $tieneHistoria = $usuario->paciente?->historiaClinica;
+                        if ($tieneHistoria) {
+                            $rutaHistoria = Auth::user()->hasRole('administrador')
+                                ? route('admin.historia.edit', $usuario->id)
+                                : (Auth::user()->hasRole('odontologo')
+                                    ? route('odontologo.historia.edit', $usuario->id)
+                                    : route('recepcionista.pacientes.historial', $usuario->id));
+                        } else {
+                            $rutaHistoria = Auth::user()->hasRole('administrador')
+                                ? route('admin.historia.create', $usuario->id)
+                                : route('odontologo.historia.create', $usuario->id);
+                        }
+                    @endphp
+                    <a href="{{ $rutaHistoria }}"
+                        class="flex items-center gap-2 font-semibold text-sm px-5 py-3 rounded-xl transition-colors shadow-sm
+                            {{ $tieneHistoria
+                                ? 'bg-white border border-slate-200 text-slate-900 hover:bg-slate-50'
+                                : 'bg-amber-500 hover:bg-amber-600 text-white' }}">
+                        <span class="material-symbols-outlined">
+                            {{ $tieneHistoria ? 'folder_shared' : 'assignment_add' }}
+                        </span>
+                        {{ $tieneHistoria ? 'Historia Clínica' : 'Llenar Historia Clínica' }}
                     </a>
 
                     {{-- Descargar Resumen --}}

@@ -115,6 +115,18 @@ Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(functi
 
     Route::get('/semana', [\App\Http\Controllers\SemanaController::class, 'adminIndex'])
         ->name('admin.semana');
+
+    // Historia clínica accesible desde admin
+    Route::get('/pacientes/{id}/historia/crear', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'create'])
+        ->name('admin.historia.create');
+    Route::post('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'store'])
+        ->name('admin.historia.store');
+    Route::get('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'edit'])
+        ->name('admin.historia.edit');
+    Route::patch('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update'])
+        ->name('admin.historia.update');
+    Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
+        ->name('admin.historia.pdf');
 });
 
 // ============================
@@ -258,8 +270,9 @@ Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function
         ->name('paciente.perfil.update');
 });
 
-
-// Rutas recepcionista
+// ============================
+// RUTAS RECEPCIONISTA
+// ============================
 Route::prefix('recepcionista')->middleware(['auth', 'role:recepcionista'])->group(function () {
     Route::get('/dashboard', function () {
         $citasHoy = \App\Models\Cita::with('paciente.user')
@@ -273,11 +286,8 @@ Route::prefix('recepcionista')->middleware(['auth', 'role:recepcionista'])->grou
         $citasHoyPendientes = $citasHoy->where('estado', 'pendiente')->count();
 
         return view('recepcionista.recepcionistainicio', compact(
-            'citasHoy',
-            'totalPacientes',
-            'citasPendientes',
-            'citasHoyConfirmadas',
-            'citasHoyPendientes'
+            'citasHoy', 'totalPacientes', 'citasPendientes',
+            'citasHoyConfirmadas', 'citasHoyPendientes'
         ));
     })->name('recepcionista.dashboard');
 
@@ -303,11 +313,10 @@ Route::prefix('recepcionista')->middleware(['auth', 'role:recepcionista'])->grou
     Route::get('/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
         ->name('recepcionista.pacientes.resumen');
     Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
-    ->name('recepcionista.historia.pdf');
-    Route::get('/semana', [App\Http\Controllers\SemanaController::class, 'adminIndex'])
-    ->name('recepcionista.semana');
+        ->name('recepcionista.historia.pdf');
+    Route::get('/semana', [\App\Http\Controllers\SemanaController::class, 'adminIndex'])
+        ->name('recepcionista.semana');
 });
-
 
 // ============================
 // RUTAS COMPARTIDAS

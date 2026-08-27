@@ -170,12 +170,261 @@
                         </div>
                     </div>
 
-                    {{-- N. DIAGNÓSTICO INICIAL --}}
+                    {{-- I. INDICADORES DE SALUD BUCAL --}}
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+                        <h3 class="font-bold text-slate-900">I. Indicadores de salud bucal — Higiene Oral Simplificada</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs border border-slate-200 rounded-lg overflow-hidden">
+                                <thead>
+                                    <tr class="bg-slate-100">
+                                        <th colspan="6" class="px-3 py-2 text-xs font-bold text-slate-600 text-center border-b border-r border-slate-200">
+                                            PIEZAS DENTALES EXAMINADAS
+                                        </th>
+                                        <th class="px-2 py-2 text-xs font-bold text-slate-500 text-center border-b border-r border-slate-200">Placa<br><span class="font-normal text-slate-400">0-1-2-3-9</span></th>
+                                        <th class="px-2 py-2 text-xs font-bold text-slate-500 text-center border-b border-r border-slate-200">Cálculo<br><span class="font-normal text-slate-400">0-1-2-3</span></th>
+                                        <th class="px-2 py-2 text-xs font-bold text-slate-500 text-center border-b border-slate-200">Gingivitis<br><span class="font-normal text-slate-400">0-1</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @php
+                                        $col1 = [16, 11, 26, 36, 31, 46];
+                                        $col2 = [17, 21, 27, 37, 41, 47];
+                                        $col3 = [55, 51, 65, 75, 71, 81];
+                                    @endphp
+                                    @for($i = 0; $i < 6; $i++)
+                                        @php
+                                            $p1 = $col1[$i];
+                                            $p2 = $col2[$i];
+                                            $p3 = $col3[$i];
+                                            $rowKey = $i; // clave de fila para placa/calculo/gingivitis
+                                        @endphp
+                                        <tr>
+                                            {{-- Pieza col1 + checkbox --}}
+                                            <td class="px-2 py-2 font-bold text-blue-500 text-center border-r border-slate-200">{{ $p1 }}</td>
+                                            <td class="px-2 py-1.5 text-center border-r border-slate-200">
+                                                <input type="checkbox" name="hos_examinada[{{ $p1 }}]" value="1"
+                                                    {{ old("hos_examinada.$p1") ? 'checked' : '' }}
+                                                    class="w-3.5 h-3.5 accent-blue-500 cursor-pointer">
+                                            </td>
+                                            {{-- Pieza col2 + checkbox --}}
+                                            <td class="px-2 py-2 font-bold text-purple-500 text-center border-r border-slate-200">{{ $p2 }}</td>
+                                            <td class="px-2 py-1.5 text-center border-r border-slate-200">
+                                                <input type="checkbox" name="hos_examinada[{{ $p2 }}]" value="1"
+                                                    {{ old("hos_examinada.$p2") ? 'checked' : '' }}
+                                                    class="w-3.5 h-3.5 accent-purple-500 cursor-pointer">
+                                            </td>
+                                            {{-- Pieza col3 + checkbox --}}
+                                            <td class="px-2 py-2 font-bold text-green-600 text-center border-r border-slate-200">{{ $p3 }}</td>
+                                            <td class="px-2 py-1.5 text-center border-r border-slate-200">
+                                                <input type="checkbox" name="hos_examinada[{{ $p3 }}]" value="1"
+                                                    {{ old("hos_examinada.$p3") ? 'checked' : '' }}
+                                                    class="w-3.5 h-3.5 accent-green-500 cursor-pointer">
+                                            </td>
+                                            {{-- Placa fila --}}
+                                            <td class="px-2 py-1.5 text-center border-r border-slate-200">
+                                                <select name="hos_placa[{{ $rowKey }}]"
+                                                    class="bg-slate-50 border border-slate-200 rounded px-1 py-1 text-xs outline-none focus:border-blue-400 w-12">
+                                                    <option value="">—</option>
+                                                    @foreach(['0','1','2','3','9'] as $v)
+                                                        <option value="{{ $v }}" {{ old("hos_placa.$rowKey") == $v ? 'selected' : '' }}>{{ $v }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            {{-- Cálculo fila --}}
+                                            <td class="px-2 py-1.5 text-center border-r border-slate-200">
+                                                <select name="hos_calculo[{{ $rowKey }}]"
+                                                    class="bg-slate-50 border border-slate-200 rounded px-1 py-1 text-xs outline-none focus:border-blue-400 w-12">
+                                                    <option value="">—</option>
+                                                    @foreach(['0','1','2','3'] as $v)
+                                                        <option value="{{ $v }}" {{ old("hos_calculo.$rowKey") == $v ? 'selected' : '' }}>{{ $v }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            {{-- Gingivitis fila --}}
+                                            <td class="px-2 py-1.5 text-center">
+                                                <select name="hos_gingivitis[{{ $rowKey }}]"
+                                                    class="bg-slate-50 border border-slate-200 rounded px-1 py-1 text-xs outline-none focus:border-blue-400 w-12">
+                                                    <option value="">—</option>
+                                                    @foreach(['0','1'] as $v)
+                                                        <option value="{{ $v }}" {{ old("hos_gingivitis.$rowKey") == $v ? 'selected' : '' }}>{{ $v }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    @endfor
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {{-- Enfermedad Periodontal --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Tipo de oclusión</label>
+                                <select name="tipo_oclusion"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    <option value="">Selecciona</option>
+                                    <option value="Angle I" {{ old('tipo_oclusion') == 'Angle I' ? 'selected' : '' }}>Angle I</option>
+                                    <option value="Angle II" {{ old('tipo_oclusion') == 'Angle II' ? 'selected' : '' }}>Angle II</option>
+                                    <option value="Angle III" {{ old('tipo_oclusion') == 'Angle III' ? 'selected' : '' }}>Angle III</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1.5">Nivel de fluorosis</label>
+                                <select name="nivel_fluorosis"
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    <option value="">Selecciona</option>
+                                    <option value="Leve" {{ old('nivel_fluorosis') == 'Leve' ? 'selected' : '' }}>Leve</option>
+                                    <option value="Moderada" {{ old('nivel_fluorosis') == 'Moderada' ? 'selected' : '' }}>Moderada</option>
+                                    <option value="Severa" {{ old('nivel_fluorosis') == 'Severa' ? 'selected' : '' }}>Severa</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- J. ÍNDICES CPO-ceo --}}
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+                        <h3 class="font-bold text-slate-900">J. Índices CPO-ceo</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <p class="text-xs font-bold text-slate-600 mb-3">CPO — Dentición permanente</p>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1.5">C — Cariadas</label>
+                                        <input type="number" name="cpo_c" min="0" max="32" value="{{ old('cpo_c', 0) }}"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1.5">P — Perdidas</label>
+                                        <input type="number" name="cpo_p" min="0" max="32" value="{{ old('cpo_p', 0) }}"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1.5">O — Obturadas</label>
+                                        <input type="number" name="cpo_o" min="0" max="32" value="{{ old('cpo_o', 0) }}"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2">Total CPO: <span id="total-cpo" class="font-bold text-slate-700">0</span></p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-600 mb-3">ceo — Dentición temporal</p>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1.5">c — Cariadas</label>
+                                        <input type="number" name="ceo_c" min="0" max="20" value="{{ old('ceo_c', 0) }}"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1.5">e — Extraídas</label>
+                                        <input type="number" name="ceo_e" min="0" max="20" value="{{ old('ceo_e', 0) }}"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-500 mb-1.5">o — Obturadas</label>
+                                        <input type="number" name="ceo_o" min="0" max="20" value="{{ old('ceo_o', 0) }}"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2">Total ceo: <span id="total-ceo" class="font-bold text-slate-700">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- N. DIAGNÓSTICO --}}
                     <div class="bg-white border border-slate-200 rounded-2xl p-6">
-                        <h3 class="font-bold text-slate-900 mb-4">N. Diagnóstico inicial</h3>
-                        <textarea name="diagnostico_inicial" rows="3"
-                            placeholder="Diagnóstico presuntivo o definitivo (CIE-10)..."
-                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">{{ old('diagnostico_inicial') }}</textarea>
+                        <h3 class="font-bold text-slate-900 mb-1">N. Diagnóstico</h3>
+                        <p class="text-xs text-slate-400 mb-4">PRE = Presuntivo &nbsp;·&nbsp; DEF = Definitivo</p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-xs font-bold text-slate-500 text-left w-6">#</th>
+                                        <th class="px-3 py-2 text-xs font-bold text-slate-500 text-left">Descripción del diagnóstico</th>
+                                        <th class="px-3 py-2 text-xs font-bold text-slate-500 text-center w-24">CIE-10</th>
+                                        <th class="px-3 py-2 text-xs font-bold text-slate-500 text-center w-16">PRE</th>
+                                        <th class="px-3 py-2 text-xs font-bold text-slate-500 text-center w-16">DEF</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @for($i = 0; $i < 6; $i++)
+                                        <tr>
+                                            <td class="px-3 py-2 text-xs font-bold text-slate-400">{{ $i + 1 }}.</td>
+                                            <td class="px-3 py-2">
+                                                <input type="text" name="diagnosticos[{{ $i }}][descripcion]"
+                                                    value="{{ old("diagnosticos.$i.descripcion") }}"
+                                                    placeholder="Descripción del diagnóstico..."
+                                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-blue-400">
+                                            </td>
+                                            <td class="px-3 py-2 text-center">
+                                                <input type="text" name="diagnosticos[{{ $i }}][cie]"
+                                                    value="{{ old("diagnosticos.$i.cie") }}"
+                                                    placeholder="K02.1"
+                                                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-blue-400 text-center">
+                                            </td>
+                                            <td class="px-3 py-2 text-center">
+                                                <input type="radio" name="diagnosticos[{{ $i }}][tipo]" value="pre"
+                                                    {{ old("diagnosticos.$i.tipo") == 'pre' ? 'checked' : '' }}
+                                                    class="w-4 h-4 accent-blue-500 cursor-pointer">
+                                            </td>
+                                            <td class="px-3 py-2 text-center">
+                                                <input type="radio" name="diagnosticos[{{ $i }}][tipo]" value="def"
+                                                    {{ old("diagnosticos.$i.tipo") == 'def' ? 'checked' : '' }}
+                                                    class="w-4 h-4 accent-blue-500 cursor-pointer">
+                                            </td>
+                                        </tr>
+                                    @endfor
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- L. PEDIDO DE EXÁMENES COMPLEMENTARIOS --}}
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+                        <h3 class="font-bold text-slate-900">L. Pedido de exámenes complementarios</h3>
+                        <div class="form-group">
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Descripción del pedido</label>
+                            <textarea name="examenes_pedido" rows="3"
+                                placeholder="Describa los exámenes complementarios solicitados..."
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">{{ old('examenes_pedido') }}</textarea>
+                        </div>
+                    </div>
+
+                    {{-- M. INFORME DE EXÁMENES --}}
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+                        <h3 class="font-bold text-slate-900">M. Informe de exámenes</h3>
+                        <div class="flex flex-wrap gap-4 mb-3">
+                            <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                                <input type="checkbox" name="examenes_biometria" value="1"
+                                    {{ old('examenes_biometria') ? 'checked' : '' }}
+                                    class="w-4 h-4 accent-blue-500">
+                                Biometría
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                                <input type="checkbox" name="examenes_quimica" value="1"
+                                    {{ old('examenes_quimica') ? 'checked' : '' }}
+                                    class="w-4 h-4 accent-blue-500">
+                                Química sanguínea
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                                <input type="checkbox" name="examenes_rayos_x" value="1"
+                                    {{ old('examenes_rayos_x') ? 'checked' : '' }}
+                                    class="w-4 h-4 accent-blue-500">
+                                Rayos-X
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm text-slate-600">Otros:</span>
+                                <input type="text" name="examenes_otros"
+                                    value="{{ old('examenes_otros') }}"
+                                    placeholder="Especifique..."
+                                    class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-400">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Informe / resultado de exámenes</label>
+                            <textarea name="examenes_informe" rows="4"
+                                placeholder="Registre los resultados o informe de los exámenes realizados..."
+                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">{{ old('examenes_informe') }}</textarea>
+                        </div>
                     </div>
 
                     <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center gap-2">
@@ -198,4 +447,19 @@
         </div>
     </main>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+function calcularTotales() {
+    const cpo = ['cpo_c','cpo_p','cpo_o'].reduce((s, n) => s + (parseInt(document.querySelector(`[name="${n}"]`)?.value) || 0), 0);
+    const ceo = ['ceo_c','ceo_e','ceo_o'].reduce((s, n) => s + (parseInt(document.querySelector(`[name="${n}"]`)?.value) || 0), 0);
+    document.getElementById('total-cpo').textContent = cpo;
+    document.getElementById('total-ceo').textContent = ceo;
+}
+['cpo_c','cpo_p','cpo_o','ceo_c','ceo_e','ceo_o'].forEach(n => {
+    document.querySelector(`[name="${n}"]`)?.addEventListener('input', calcularTotales);
+});
+calcularTotales();
+</script>
 @endsection
