@@ -259,7 +259,12 @@ class HistoriaClinicaController extends Controller
 
     public function pdf($pacienteId)
     {
-        $usuario  = User::role('paciente')->with('paciente.historiaClinica')->findOrFail($pacienteId);
+        // Se carga la relación odontologo para que la sección O del PDF
+        // tenga el profesional responsable aunque el paciente todavía no
+        // tenga tratamientos registrados.
+        $usuario  = User::role('paciente')
+            ->with('paciente.historiaClinica.odontologo.user')
+            ->findOrFail($pacienteId);
         $historia = $usuario->paciente?->historiaClinica;
 
         $tratamientos = \App\Models\Tratamiento::whereHas('cita', fn($q) =>
@@ -275,4 +280,4 @@ class HistoriaClinicaController extends Controller
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="formulario-033-' . \Illuminate\Support\Str::slug($usuario->name) . '.pdf"');
     }
-}
+}   

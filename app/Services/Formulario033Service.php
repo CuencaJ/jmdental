@@ -115,7 +115,10 @@ class Formulario033Service
         $pdf->useTemplate($tpl1, 0, 0, 210, 297);
 
         $pac = $paciente->paciente ?? null;
-        $od  = $tratamientos->first()?->cita?->odontologo ?? null;
+        // Se lee primero del odontólogo que abrió la historia clínica: si el
+        // paciente aún no tiene tratamientos registrados, la sección O del
+        // formulario quedaría sin profesional responsable.
+        $od  = $historia?->odontologo ?? $tratamientos->first()?->cita?->odontologo ?? null;
 
         $pdf->SetFont('Helvetica', '', 7);
         $pdf->SetTextColor(0, 0, 0);

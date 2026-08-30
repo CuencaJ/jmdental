@@ -9,8 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('historias_clinicas', function (Blueprint $table) {
-            // Higiene Oral Simplificada — placa, cálculo, gingivitis por pieza
-            $table->json('hos_placa')->nullable()->after('diagnostico_inicial');
+            // Higiene Oral Simplificada — piezas examinadas, placa, cálculo, gingivitis
+            $table->json('hos_examinada')->nullable()->after('diagnostico_inicial');
+            $table->json('hos_placa')->nullable()->after('hos_examinada');
             $table->json('hos_calculo')->nullable()->after('hos_placa');
             $table->json('hos_gingivitis')->nullable()->after('hos_calculo');
 
@@ -34,7 +35,7 @@ return new class extends Migration
     {
         Schema::table('historias_clinicas', function (Blueprint $table) {
             $table->dropColumn([
-                'hos_placa', 'hos_calculo', 'hos_gingivitis',
+                'hos_examinada', 'hos_placa', 'hos_calculo', 'hos_gingivitis',
                 'tipo_oclusion', 'nivel_fluorosis',
                 'cpo_c', 'cpo_p', 'cpo_o',
                 'ceo_c', 'ceo_e', 'ceo_o',

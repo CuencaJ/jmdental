@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>JC Dental</title>
+  <title>JM Dental</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
 
@@ -31,7 +31,7 @@
     <div class="branding d-flex align-items-center">
       <div class="container position-relative d-flex align-items-center justify-content-between">
         <a href="{{ url('/') }}" class="logo d-flex align-items-center me-auto">
-          <h1 class="sitename">JC Dental</h1>
+          <h1 class="sitename">JM Dental</h1>
         </a>
 
         <nav id="navmenu" class="navmenu">
@@ -56,7 +56,7 @@
       <img src="{{ asset('assets/img/hero-bg.jpg') }}" alt="" data-aos="fade-in">
       <div class="container position-relative">
         <div class="welcome position-relative" data-aos="fade-down" data-aos-delay="100">
-          <h2>BIENVENIDO A JC DENTAL</h2>
+          <h2>BIENVENIDO A JM DENTAL</h2>
           <p>Cuidamos tu sonrisa con atención profesional y tecnología moderna.</p>
         </div>
         <div class="content row gy-4">
@@ -108,7 +108,7 @@
           </div>
           <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="100">
             <h3>Nosotros</h3>
-            <p>En JC Dental nos especializamos en brindar atención odontológica de calidad, con un enfoque humano y profesional. Nuestro objetivo es cuidar tu salud bucal mediante diagnósticos precisos, tratamientos modernos y un acompañamiento personalizado.</p>
+            <p>En JM Dental nos especializamos en brindar atención odontológica de calidad, con un enfoque humano y profesional. Nuestro objetivo es cuidar tu salud bucal mediante diagnósticos precisos, tratamientos modernos y un acompañamiento personalizado.</p>
             <ul>
               <li>
                 <i class="bi bi-person-check"></i>
@@ -172,8 +172,8 @@
       </div>
       <div class="mb-5" data-aos="fade-up" data-aos-delay="200">
         <iframe style="border:0; width: 100%; height: 270px;"
-          src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d48389.78314118045!2d-74.006138!3d40.710059!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a22a3bda30d%3A0xb89d1fe6bc499443!2sDowntown%20Conference%20Center!5e0!3m2!1sen!2sus!4v1676961268712!5m2!1sen!2sus"
-          frameborder="0" allowfullscreen="" loading="lazy"></iframe>
+          src="https://www.google.com/maps?q=-0.9631651,-80.7076139&hl=es&z=17&output=embed"
+          frameborder="0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
       <div class="container" data-aos="fade-up" data-aos-delay="100">
         <div class="row gy-4">
@@ -182,44 +182,59 @@
               <i class="bi bi-geo-alt flex-shrink-0"></i>
               <div>
                 <h3>Ubicación</h3>
-                <p>A108 Adam Street, New York, NY 535022</p>
+                <p>C.118 y Av.113, Manta, Manabí</p>
               </div>
             </div>
             <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="400">
               <i class="bi bi-telephone flex-shrink-0"></i>
               <div>
                 <h3>Llámanos</h3>
-                <p>+1 5589 55488 55</p>
+                <p>+593 96 710 1552</p>
               </div>
             </div>
             <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="500">
               <i class="bi bi-envelope flex-shrink-0"></i>
               <div>
                 <h3>Déjanos un correo</h3>
-                <p>jcdental@gmail.com</p>
+                <p>jmdental@gmail.com</p>
               </div>
             </div>
           </div>
           <div class="col-lg-8">
-            <form action="forms/contact.php" method="post" class="php-email-form" data-aos="fade-up" data-aos-delay="200">
-              <div class="row gy-4">
-                <div class="col-md-6">
-                  <input type="text" name="name" class="form-control" placeholder="Tu nombre" required="">
-                </div>
-                <div class="col-md-6">
-                  <input type="email" class="form-control" name="email" placeholder="Tu correo" required="">
-                </div>
-                <div class="col-md-12">
-                  <input type="text" class="form-control" name="subject" placeholder="Asunto" required="">
-                </div>
-                <div class="col-md-12">
-                  <textarea class="form-control" name="message" rows="6" placeholder="Mensaje" required=""></textarea>
-                </div>
-                <div class="col-md-12 text-center">
-                  <button type="submit">Enviar Mensaje</button>
-                </div>
+            <div class="row gy-4" data-aos="fade-up" data-aos-delay="200">
+
+              <div class="col-md-6">
+                <a href="https://wa.me/593967101552?text=Hola%20JM%20Dental%2C%20quisiera%20informaci%C3%B3n%20sobre%20sus%20servicios."
+                   target="_blank" rel="noopener"
+                   class="d-block text-center p-4 rounded-3 h-100 text-decoration-none"
+                   style="border:1px solid #dee2e6; transition:all .2s;">
+                  <i class="bi bi-whatsapp" style="font-size:2.5rem; color:#25D366;"></i>
+                  <h4 class="mt-3 mb-2 fw-bold" style="color:#2c4964;">Escríbenos por WhatsApp</h4>
+                  <p class="mb-0 text-muted">Respuesta rápida para agendar o resolver dudas.</p>
+                </a>
               </div>
-            </form>
+
+              <div class="col-md-6">
+                <a href="mailto:jmdental@gmail.com?subject=Consulta%20desde%20la%20web"
+                   class="d-block text-center p-4 rounded-3 h-100 text-decoration-none"
+                   style="border:1px solid #dee2e6; transition:all .2s;">
+                  <i class="bi bi-envelope-fill" style="font-size:2.5rem; color:#1977cc;"></i>
+                  <h4 class="mt-3 mb-2 fw-bold" style="color:#2c4964;">Envíanos un correo</h4>
+                  <p class="mb-0 text-muted">Para consultas más detalladas o documentación.</p>
+                </a>
+              </div>
+
+              <div class="col-12 text-center mt-4">
+                <p class="text-muted mb-3">¿Quieres agendar una cita en línea?</p>
+                <a href="{{ route('login') }}" class="btn btn-primary px-4 me-2">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+                </a>
+                <a href="{{ route('registro') }}" class="btn btn-outline-primary px-4">
+                  <i class="bi bi-person-plus me-2"></i>Crear Cuenta
+                </a>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
@@ -232,19 +247,19 @@
       <div class="row gy-4">
         <div class="col-lg-4 col-md-6 footer-about">
           <a href="{{ url('/') }}" class="logo d-flex align-items-center">
-            <span class="sitename">JC Dental</span>
+            <span class="sitename">JM Dental</span>
           </a>
           <div class="footer-contact pt-3">
-            <p>A108 Adam Street</p>
-            <p>New York, NY 535022</p>
-            <p class="mt-3"><strong>Teléfono:</strong> <span>+1 5589 55488 55</span></p>
-            <p><strong>Email:</strong> <span>jcdental@gmail.com</span></p>
+            <p>C.118 y Av.113</p>
+            <p>Manta, Manabí — Ecuador</p>
+            <p class="mt-3"><strong>Teléfono:</strong> <span>+593 96 710 1552</span></p>
+            <p><strong>Email:</strong> <span>jmdental@gmail.com</span></p>
           </div>
           <div class="social-links d-flex mt-4">
-            <a href=""><i class="bi bi-twitter-x"></i></a>
-            <a href=""><i class="bi bi-facebook"></i></a>
-            <a href=""><i class="bi bi-instagram"></i></a>
-            <a href=""><i class="bi bi-linkedin"></i></a>
+            <a href="https://wa.me/593967101552?text=Hola%20JM%20Dental%2C%20quisiera%20informaci%C3%B3n%20sobre%20sus%20servicios."
+               target="_blank" rel="noopener" title="Escríbenos por WhatsApp">
+              <i class="bi bi-whatsapp"></i>
+            </a>
           </div>
         </div>
         <div class="col-lg-2 col-md-3 footer-links">
@@ -260,7 +275,7 @@
       </div>
     </div>
     <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="px-1 sitename">JC Dental</strong> <span>Todos los derechos reservados</span></p>
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">JM Dental</strong> <span>Todos los derechos reservados</span></p>
     </div>
   </footer>
 

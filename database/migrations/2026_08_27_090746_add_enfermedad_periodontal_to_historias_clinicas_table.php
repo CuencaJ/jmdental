@@ -9,20 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('historias_clinicas', function (Blueprint $table) {
-            $table->json('antecedentes_personales_check')->nullable()->after('antecedentes_personales');
-            $table->json('antecedentes_familiares_check')->nullable()->after('antecedentes_familiares');
-            $table->json('examen_estomatognatico_check')->nullable()->after('examen_intraoral');
+            $table->string('enfermedad_periodontal', 20)->nullable();
         });
     }
 
     public function down(): void
     {
         Schema::table('historias_clinicas', function (Blueprint $table) {
-            $table->dropColumn([
-                'antecedentes_personales_check',
-                'antecedentes_familiares_check',
-                'examen_estomatognatico_check',
-            ]);
+            $table->dropColumn('enfermedad_periodontal');
         });
     }
 };

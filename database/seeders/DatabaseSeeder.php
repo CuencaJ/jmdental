@@ -20,34 +20,37 @@ class DatabaseSeeder extends Seeder
         // ── Administrador ──
         // `name` no se envía: lo arma solo el hook booted() del modelo User.
         $admin = User::create([
-            'primer_nombre'   => 'Jerson',
-            'primer_apellido' => 'Admin',
-            'cedula'          => '1111111111',
+            'primer_nombre'    => 'Johan',
+            'segundo_nombre'   => 'Francisco',
+            'primer_apellido'  => 'Sanchez',
+            'segundo_apellido' => 'Mero',
+            'cedula'          => '1315207769',
             'email'           => 'admin@gmail.com',
             'password'        => Hash::make('admin123'),
-            'telefono'        => '0991234567',
+            'telefono'        => '0979341684',
         ]);
         $admin->assignRole('administrador');
 
         // ── Odontólogo ──
         $doctor = User::create([
-            'primer_nombre'    => 'Carlos',
-            'primer_apellido'  => 'Smith',
-            'segundo_apellido' => 'Vera',
-            'cedula'           => '2222222222',
-            'email'            => 'ddoctor@gmail.com',
+            'primer_nombre'    => 'Jennifer',
+            'segundo_nombre'   => 'Andreina',
+            'primer_apellido'  => 'Camacho',
+            'segundo_apellido' => 'Mero',
+            'cedula'           => '1313681486',
+            'email'            => 'odontologa@gmail.com',
             'password'         => Hash::make('doctor123'),
-            'telefono'         => '0992345678',
+            'telefono'         => '0967101552',
         ]);
         $doctor->assignRole('odontologo');
 
         // Sin este registro el odontólogo no aparece al agendar citas
         // y la sección O del PDF sale vacía.
         $doctor->odontologo()->create([
-            'cedula'            => '2222222222',
+            'cedula'            => '1313681486',
             'especialidad'      => 'Odontología General',
             'numero_licencia'   => 'LIC-101',
-            'telefono'          => '0992345678',
+            'telefono'          => '0967101552',
             'universidad'       => 'Universidad Central del Ecuador',
             'titulo'            => 'Odontólogo',
             'anios_experiencia' => 8,
@@ -56,40 +59,41 @@ class DatabaseSeeder extends Seeder
         // ── Recepcionista ──
         // No requiere tabla propia: no existe `recepcionistas` en el esquema.
         $recepcionista = User::create([
-            'primer_nombre'    => 'Maria',
-            'primer_apellido'  => 'Garcia',
-            'segundo_apellido' => 'Ruiz',
-            'cedula'           => '3333333333',
-            'email'            => 'rrecepcionista@gmail.com',
+            'primer_nombre'    => 'Nayeska',
+            'segundo_nombre'   => 'Antonella',
+            'primer_apellido'  => 'Cuenca',
+            'segundo_apellido' => 'Holguín',
+            'cedula'           => '1315967917',
+            'email'            => 'recepcionista@gmail.com',
             'password'         => Hash::make('recep123'),
-            'telefono'         => '0993456789',
+            'telefono'         => '0939807139',
         ]);
         $recepcionista->assignRole('recepcionista');
 
         // ── Paciente ──
         $paciente = User::create([
-            'primer_nombre'    => 'Ana',
-            'segundo_nombre'   => 'Lucia',
-            'primer_apellido'  => 'Lopez',
-            'segundo_apellido' => 'Mora',
-            'cedula'           => '4444444444',
+            'primer_nombre'    => 'Jerson',
+            'segundo_nombre'   => 'Steven',
+            'primer_apellido'  => 'Cuenca',
+            'segundo_apellido' => 'Holguín',
+            'cedula'           => '1315967909',
             'email'            => 'paciente@gmail.com',
             'password'         => Hash::make('paciente123'),
-            'telefono'         => '0994567890',
+            'telefono'         => '0993281458',
         ]);
         $paciente->assignRole('paciente');
 
         // Sin este registro las rutas /paciente abortan con 403.
         $paciente->paciente()->create([
-            'cedula'              => '4444444444',
-            'fecha_nacimiento'    => '1995-04-18',
-            'genero'              => 'Femenino',
-            'direccion'           => 'Av. Amazonas y Naciones Unidas, Quito',
-            'telefono'            => '0994567890',
+            'cedula'              => '1315967909',
+            'fecha_nacimiento'    => '2002-08-24',
+            'genero'              => 'Masculino',
+            'direccion'           => 'Cuba, Manta, Manabí, Ecuador',
+            'telefono'            => '0993281458',
             'tipo_sangre'         => 'O+',
-            'alergias'            => 'Penicilina',
-            'contacto_emergencia' => 'Luis Lopez',
-            'telefono_emergencia' => '0987654321',
+            'alergias'            => 'Ninguna',
+            'contacto_emergencia' => 'Angel Cortez',
+            'telefono_emergencia' => '0969145756',
         ]);
     }
 }

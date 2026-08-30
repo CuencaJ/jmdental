@@ -62,7 +62,9 @@
                             @php
                                 $esDiaLaboral = in_array((string)$dia->isoWeekday(), $config->dias_laborables);
                                 $fechaStr = $dia->toDateString();
-                                $esBloqueado = isset($bloqueados[$fechaStr]) && in_array($slot, $bloqueados[$fechaStr]);
+                                // $bloqueados viene como ['fecha' => ['hora' => motivo]]
+                                $esBloqueado = isset($bloqueados[$fechaStr]) && array_key_exists($slot, $bloqueados[$fechaStr]);
+                                $motivoSlot  = $esBloqueado ? ($bloqueados[$fechaStr][$slot] ?? '') : '';
                                 $esPasado = $dia->isPast() && !$dia->isToday();
                             @endphp
                             <div class="py-1 px-1 border-r border-slate-100 last:border-none
@@ -70,6 +72,7 @@
                                 @if($esDiaLaboral && !$esPasado)
                                     <button type="button"
                                         onclick="toggleBloqueo('{{ $fechaStr }}', '{{ $slot }}', {{ $odontologo?->id }}, this)"
+                                        title="{{ $esBloqueado && $motivoSlot ? $motivoSlot : '' }}"
                                         class="w-full py-1.5 px-1 rounded-lg text-xs font-medium transition-all
                                             {{ $esBloqueado
                                                 ? 'bg-red-100 text-red-700 hover:bg-red-200'
@@ -112,8 +115,11 @@
         <h2 class="text-base font-bold text-slate-900 mb-4">Bloquear horario</h2>
         <div id="info-bloqueo" class="bg-slate-50 rounded-lg px-3 py-2 mb-4 text-sm text-slate-700"></div>
         <div class="mb-4">
-            <label class="block text-xs font-medium text-slate-500 mb-1.5">Motivo del bloqueo</label>
-            <input type="text" id="input-motivo" placeholder="Ej. Reunión, Urgencia personal, Vacaciones..."
+            <label for="input-motivo" class="block text-xs font-medium text-slate-500 mb-1.5">
+                Motivo del bloqueo <span class="text-slate-400 font-normal">(opcional)</span>
+            </label>
+            <input type="text" id="input-motivo" maxlength="255"
+                placeholder="Ej. Reunión, Urgencia personal, Vacaciones..."
                 class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
         </div>
         <div class="flex gap-3">
@@ -132,50 +138,63 @@
 <script>
 let _fecha = null, _hora = null, _odontologoId = null, _btn = null;
 
-function toggleBloqueo(fecha, hora, odontologoId, btn) {
+async function enviarBloqueo(payload) {
+    const r = await fetch('{{ route("semana.bloquear") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!r.ok) {
+        const texto = await r.text();
+        console.error('Error ' + r.status + ':', texto.substring(0, 1000));
+        alert('No se pudo actualizar el horario (error ' + r.status + ').');
+        return null;
+    }
+
+    return await r.json();
+}
+
+async function toggleBloqueo(fecha, hora, odontologoId, btn) {
     const esBloqueado = btn.classList.contains('bg-red-100');
+
+    // Desbloquear directo, sin modal
     if (esBloqueado) {
-        // Desbloquear directo sin modal
-        fetch('{{ route("semana.bloquear") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ fecha, hora_inicio: hora, odontologo_id: odontologoId, motivo: '' })
-        })
-        .then(r => r.json())
-        .then(data => {
-            btn.className = 'w-full py-1.5 px-1 rounded-lg text-xs font-medium transition-all bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-500 border border-dashed border-slate-200 hover:border-blue-300';
-            btn.textContent = '+ Libre';
-        });
+        const data = await enviarBloqueo({ fecha, hora_inicio: hora, odontologo_id: odontologoId });
+        if (!data) return;
+        btn.className = 'w-full py-1.5 px-1 rounded-lg text-xs font-medium transition-all bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-500 border border-dashed border-slate-200 hover:border-blue-300';
+        btn.textContent = '+ Libre';
+        btn.title = '';
         return;
     }
-    // Mostrar modal para agregar motivo
+
+    // Bloquear: pedir el motivo en el modal
     _fecha = fecha; _hora = hora; _odontologoId = odontologoId; _btn = btn;
     document.getElementById('info-bloqueo').textContent = fecha + ' — ' + hora;
     document.getElementById('input-motivo').value = '';
     const modal = document.getElementById('modal-motivo');
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    document.getElementById('input-motivo').focus();
 }
 
-function confirmarBloqueo() {
-    const motivo = document.getElementById('input-motivo').value || 'Bloqueado';
-    fetch('{{ route("semana.bloquear") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ fecha: _fecha, hora_inicio: _hora, odontologo_id: _odontologoId, motivo })
-    })
-    .then(r => r.json())
-    .then(data => {
-        _btn.className = 'w-full py-1.5 px-1 rounded-lg text-xs font-medium transition-all bg-red-100 text-red-700 hover:bg-red-200';
-        _btn.textContent = '🔒 Bloqueado';
-        cerrarModal();
+async function confirmarBloqueo() {
+    const motivo = document.getElementById('input-motivo').value.trim();
+    const data = await enviarBloqueo({
+        fecha: _fecha,
+        hora_inicio: _hora,
+        odontologo_id: _odontologoId,
+        motivo: motivo
     });
+    if (!data) return;
+    _btn.className = 'w-full py-1.5 px-1 rounded-lg text-xs font-medium transition-all bg-red-100 text-red-700 hover:bg-red-200';
+    _btn.textContent = '🔒 Bloqueado';
+    _btn.title = motivo;
+    cerrarModal();
 }
 
 function cerrarModal() {

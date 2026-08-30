@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Rules\CedulaEcuatoriana;
 
 class AutenticacionController extends Controller
 {
@@ -18,6 +19,9 @@ class AutenticacionController extends Controller
     // los menores de edad usan el correo del representante.
     public function iniciarSesion(Request $request)
     {
+        // Aquí la cédula es solo una credencial de búsqueda: no se valida
+        // el algoritmo ni la unicidad. Si algo está mal, el mensaje debe
+        // ser genérico ("credenciales incorrectas"), no revelar detalles.
         $credenciales = $request->validate([
             'cedula'   => 'required|digits:10',
             'password' => 'required',
@@ -77,8 +81,9 @@ class AutenticacionController extends Controller
             'segundo_nombre'   => 'nullable|string|max:100',
             'primer_apellido'  => 'required|string|max:100',
             'segundo_apellido' => 'nullable|string|max:100',
-            // La cédula es la credencial de login: única e irrepetible.
-            'cedula'           => 'required|digits:10|unique:users,cedula',
+            // La cédula es la credencial de login: única, y validada con el
+            // algoritmo del Registro Civil ecuatoriano.
+            'cedula'           => ['required', 'digits:10', 'unique:users,cedula', new CedulaEcuatoriana],
             // El email NO es unique: un menor puede usar el correo de su representante.
             'email'            => 'required|string|email:rfc|max:255',
             'telefono'         => 'required|string|max:15',

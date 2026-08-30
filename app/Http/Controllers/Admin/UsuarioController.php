@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Paciente;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use App\Rules\CedulaEcuatoriana;
 
 class UsuarioController extends Controller
 {
@@ -46,7 +47,7 @@ class UsuarioController extends Controller
             'primer_apellido'   => 'required|string|max:100',
             'segundo_apellido'  => 'nullable|string|max:100',
             // La cédula es la credencial de login: obligatoria para todos los roles.
-            'cedula'            => 'required|digits:10|unique:users,cedula',
+            'cedula' => ['required', 'digits:10', 'unique:users,cedula', new CedulaEcuatoriana],
             // El email NO es unique: un menor puede usar el correo de su representante.
             'email'             => 'required|string|email:rfc|max:255',
             'telefono'          => 'required|string|max:15',
@@ -138,9 +139,10 @@ class UsuarioController extends Controller
             'segundo_nombre'   => 'nullable|string|max:100',
             'primer_apellido'  => 'required|string|max:100',
             'segundo_apellido' => 'nullable|string|max:100',
-            'cedula'           => [
+            'cedula' => [
                 'required', 'digits:10',
                 Rule::unique('users', 'cedula')->ignore($usuario->id),
+                new CedulaEcuatoriana,
             ],
             'email'            => 'required|string|email:rfc|max:255',
             'telefono'         => 'required|string|max:15',

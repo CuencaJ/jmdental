@@ -101,27 +101,51 @@ class SemanaController extends Controller
 
     public function bloquear(Request $request)
     {
-        $request->validate([
+        $validado = $request->validate([
             'odontologo_id' => 'required|exists:odontologos,id',
             'fecha'         => 'required|date',
             'hora_inicio'   => 'required',
-            'hora_fin'      => 'required',
+            // hora_fin es opcional: la vista solo envía la hora de inicio,
+            // así que se calcula con la duración de slot configurada.
+            'hora_fin'      => 'nullable',
+            'motivo'        => 'nullable|string|max:255',
         ]);
 
-        $existe = HorarioBloqueado::where('odontologo_id', $request->odontologo_id)
-            ->where('fecha', $request->fecha)
-            ->where('hora_inicio', $request->hora_inicio)
-            ->where('hora_fin', $request->hora_fin)
+        $config  = ConfiguracionHorario::obtener();
+        $horaFin = $validado['hora_fin'] ?? Carbon::parse($validado['hora_inicio'])
+            ->addMinutes($config->duracion_slot)
+            ->format('H:i');
+
+        // Se busca solo por hora_inicio: comparar también hora_fin hacía que
+        // no encontrara el registro al desbloquear.
+        $existe = HorarioBloqueado::where('odontologo_id', $validado['odontologo_id'])
+            ->where('fecha', $validado['fecha'])
+            ->where('hora_inicio', $validado['hora_inicio'])
             ->first();
 
         if ($existe) {
             $existe->delete();
+            $bloqueado = false;
         } else {
             HorarioBloqueado::create([
-                'odontologo_id' => $request->odontologo_id,
-                'fecha'         => $request->fecha,
-                'hora_inicio'   => $request->hora_inicio,
-                'hora_fin'      => $request->hora_fin,
+                'odontologo_id' => $validado['odontologo_id'],
+                'fecha'         => $validado['fecha'],
+                'hora_inicio'   => $validado['hora_inicio'],
+                'hora_fin'      => $horaFin,
+                'motivo'        => $validado['motivo'] ?? null,
+                // La columna created_by es NOT NULL: registra quién bloqueó.
+                'created_by'    => auth()->id(),
+            ]);
+            $bloqueado = true;
+        }
+
+        // La vista usa fetch(), así que se responde en JSON.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok'        => true,
+                'bloqueado' => $bloqueado,
+                'motivo'    => $bloqueado ? ($validado['motivo'] ?? null) : null,
+                'mensaje'   => $bloqueado ? 'Horario bloqueado.' : 'Horario liberado.',
             ]);
         }
 
@@ -157,6 +181,10 @@ class SemanaController extends Controller
         return $slots;
     }
 
+    /**
+     * Devuelve los bloqueos de la semana indexados por fecha y hora, con su
+     * motivo: ['2026-09-01' => ['09:00' => 'Reunión', ...], ...]
+     */
     private function getBloqueados(array $semana, ?int $odontologoId): array
     {
         if (!$odontologoId) return [];
@@ -166,8 +194,10 @@ class SemanaController extends Controller
         return HorarioBloqueado::where('odontologo_id', $odontologoId)
             ->whereIn('fecha', $fechas)
             ->get()
-            ->groupBy('fecha')
-            ->map(fn($g) => $g->pluck('hora_inicio')->toArray())
+            ->groupBy(fn($b) => Carbon::parse($b->fecha)->toDateString())
+            ->map(fn($grupo) => $grupo->mapWithKeys(fn($b) => [
+                Carbon::parse($b->hora_inicio)->format('H:i') => $b->motivo,
+            ])->toArray())
             ->toArray();
     }
 }
