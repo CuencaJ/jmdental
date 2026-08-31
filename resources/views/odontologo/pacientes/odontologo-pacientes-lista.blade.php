@@ -4,7 +4,7 @@
 
 @section('content')
 
-<div class="flex min-h-screen bg-slate-50">
+<div class="flex h-screen overflow-hidden bg-slate-50">
 
     @include('layouts.partials.sidebar-odontologo')
 
@@ -12,7 +12,7 @@
     <main class="flex-1 flex flex-col overflow-hidden">
 
         {{-- HEADER --}}
-        <header class="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-200 sticky top-0 z-10">
+        <header class="h-16 flex items-center justify-between px-8 bg-white border-b border-slate-200 sticky top-0 z-10 flex-shrink-0">
             <div class="relative w-96">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                 <input type="text" id="buscador"
@@ -85,7 +85,7 @@
                         <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
                                 <th class="px-8 py-5 text-xs font-bold uppercase text-slate-400">#</th>
-                                <th class="px-8 py-5 text-xs font-bold uppercase text-slate-400">Usuario</th>
+                                <th class="px-8 py-5 text-xs font-bold uppercase text-slate-400 min-w-[220px]">Usuario</th>
                                 <th class="px-8 py-5 text-xs font-bold uppercase text-slate-400">Correo</th>
                                 <th class="px-8 py-5 text-xs font-bold uppercase text-slate-400">Teléfono</th>
                                 <th class="px-8 py-5 text-xs font-bold uppercase text-slate-400">Estado</th>
@@ -97,37 +97,37 @@
                             @forelse($pacientes as $paciente)
                                 <tr class="hover:bg-blue-50/30 transition-colors group"
                                     data-estado="{{ $paciente->activo ? 'activo' : 'inactivo' }}">
-                                    <td class="px-8 py-4 text-sm text-blue-500 font-bold">
+                                    <td class="px-8 py-4 text-sm text-blue-500 font-bold whitespace-nowrap">
                                         #BS-{{ str_pad($paciente->id, 4, '0', STR_PAD_LEFT) }}
                                     </td>
-                                    <td class="px-8 py-4">
+                                    <td class="px-8 py-4 whitespace-nowrap min-w-[220px]">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                                            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold flex-shrink-0">
                                                 {{ strtoupper(substr($paciente->name, 0, 2)) }}
                                             </div>
-                                            <div>
-                                                <p class="font-semibold text-slate-900">{{ $paciente->name }}</p>
-                                                <p class="text-xs text-slate-400">
+                                            <div class="min-w-0">
+                                                <p class="font-semibold text-slate-900 leading-snug">{{ $paciente->name }}</p>
+                                                <p class="text-xs text-slate-400 leading-snug">
                                                     Registrado {{ $paciente->created_at->format('d M Y') }}
                                                 </p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-8 py-4 text-sm text-slate-500">{{ $paciente->email }}</td>
-                                    <td class="px-8 py-4 text-sm text-slate-500">{{ $paciente->telefono ?? '-' }}</td>
-                                    <td class="px-8 py-4">
+                                    <td class="px-8 py-4 text-sm text-slate-500 whitespace-nowrap">{{ $paciente->email }}</td>
+                                    <td class="px-8 py-4 text-sm text-slate-500 whitespace-nowrap">{{ $paciente->telefono ?? '-' }}</td>
+                                    <td class="px-8 py-4 whitespace-nowrap">
                                         <span class="px-3 py-1 rounded-full text-xs font-bold
                                             {{ $paciente->activo ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500' }}">
                                             {{ $paciente->activo ? 'Activo' : 'Inactivo' }}
                                         </span>
                                     </td>
-                                    <td class="px-8 py-4 text-center">
+                                    <td class="px-8 py-4 text-center whitespace-nowrap">
                                         <a href="{{ route('odontologo.historial') }}"
                                             class="text-blue-500 hover:scale-110 transition-transform inline-block">
                                             <span class="material-symbols-outlined">medical_information</span>
                                         </a>
                                     </td>
-                                    <td class="px-8 py-4">
+                                    <td class="px-8 py-4 whitespace-nowrap">
                                         <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <a href="{{ route('odontologo.pacientes.show', $paciente->id) }}"
                                                 class="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all">

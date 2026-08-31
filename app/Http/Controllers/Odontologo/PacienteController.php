@@ -39,22 +39,38 @@ class PacienteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'cedula'   => 'required|digits:10|unique:users,cedula',
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'telefono' => 'nullable|string|max:15',
             'password' => 'required|min:8|confirmed',
         ], [
+            'cedula.required'    => 'El número de cédula es obligatorio.',
+            'cedula.digits'      => 'La cédula debe tener exactamente 10 dígitos.',
+            'cedula.unique'      => 'Este número de cédula ya está registrado.',
             'email.unique'       => 'Este correo ya está registrado.',
             'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
+        // Separar nombres y apellidos a partir del texto ingresado
+        $partes = array_values(array_filter(explode(' ', trim($validated['name']))));
+        $primerNombre = $partes[0] ?? $validated['name'];
+        $segundoNombre = isset($partes[2]) ? $partes[1] : null;
+        $primerApellido = isset($partes[2]) ? $partes[2] : ($partes[1] ?? $primerNombre);
+        $segundoApellido = $partes[3] ?? null;
+
         $user = User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'telefono' => $validated['telefono'],
-            'password' => Hash::make($validated['password']),
-            'activo'   => true,
+            'name'             => $validated['name'],
+            'cedula'           => $validated['cedula'],
+            'primer_nombre'    => $primerNombre,
+            'segundo_nombre'   => $segundoNombre,
+            'primer_apellido'  => $primerApellido,
+            'segundo_apellido' => $segundoApellido,
+            'email'            => $validated['email'],
+            'telefono'         => $validated['telefono'],
+            'password'         => Hash::make($validated['password']),
+            'activo'           => true,
         ]);
 
         $user->assignRole('paciente');

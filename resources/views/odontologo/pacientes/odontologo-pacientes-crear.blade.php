@@ -4,35 +4,29 @@
 
 @section('content')
 
-<div class="flex min-h-screen bg-slate-50">
+<div class="flex h-screen overflow-hidden bg-slate-50">
 
     @include('layouts.partials.sidebar-odontologo')
 
+    {{-- CONTENIDO PRINCIPAL --}}
     <main class="flex-1 flex flex-col overflow-hidden">
 
-        {{-- HEADER --}}
-        <header class="h-16 flex items-center px-8 bg-white border-b border-slate-200 sticky top-0 z-10">
-            <div class="relative w-96">
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                <input type="text"
-                    class="w-full bg-slate-100 border-none rounded-lg pl-10 pr-4 py-2 text-sm outline-none"
-                    placeholder="Buscar pacientes por nombre, correo o ID...">
-            </div>
-        </header>
+        {{-- CONTENIDO SCROLLABLE --}}
+        <div class="flex-1 overflow-y-auto p-8 lg:p-12">
+            <div class="max-w-2xl mx-auto space-y-6">
 
-        <div class="flex-1 overflow-y-auto p-8">
-            <div class="max-w-2xl mx-auto">
-
-                <div class="flex items-center gap-3 mb-6">
-                    <a href="{{ route('odontologo.pacientes.index') }}"
-                        class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500">
-                        <span class="material-symbols-outlined">arrow_back</span>
-                    </a>
-                    <h1 class="text-xl font-bold text-slate-900">Agregar paciente</h1>
+                {{-- HEADER / VOLVER --}}
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="window.history.back();"
+                        class="text-slate-400 hover:text-slate-600 bg-transparent border-0 p-0 flex items-center cursor-pointer">
+                        <span class="material-symbols-outlined text-2xl">arrow_back</span>
+                    </button>
+                    <h1 class="text-2xl font-bold text-slate-900">Agregar paciente</h1>
                 </div>
 
+                {{-- ALERTAS DE ERROR --}}
                 @if($errors->any())
-                    <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-6">
+                    <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl text-sm shadow-sm">
                         <ul class="list-disc list-inside space-y-1">
                             @foreach($errors->all() as $error)
                                 <li>{{ $error }}</li>
@@ -41,66 +35,85 @@
                     </div>
                 @endif
 
-                <form action="{{ route('odontologo.pacientes.store') }}" method="POST"
-                    class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-5">
-                    @csrf
+                {{-- FORMULARIO --}}
+                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-8 lg:p-10">
+                    <form action="{{ route('odontologo.pacientes.store') }}" method="POST" class="space-y-6">
+                        @csrf
 
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre completo</label>
-                        <input type="text" name="name" required value="{{ old('name') }}"
-                            placeholder="Ej. Juan Pérez"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {{-- CÉDULA --}}
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Correo electrónico</label>
-                            <input type="email" name="email" required value="{{ old('email') }}"
-                                placeholder="correo@ejemplo.com"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Número de Cédula</label>
+                            <input type="text" name="cedula" value="{{ old('cedula') }}" maxlength="10"
+                                class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                                placeholder="Ej. 1312345678" required>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Teléfono</label>
-                            <input type="text" name="telefono" value="{{ old('telefono') }}"
-                                placeholder="0991234567"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {{-- NOMBRE COMPLETO --}}
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Contraseña</label>
-                            <input type="password" name="password" required
-                                placeholder="Mínimo 8 caracteres"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre completo</label>
+                            <input type="text" name="name" value="{{ old('name') }}"
+                                class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                                placeholder="Ej. Juan Carlos Pérez Gómez" required>
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Confirmar contraseña</label>
-                            <input type="password" name="password_confirmation" required
-                                placeholder="Repite la contraseña"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+
+                        {{-- CORREO Y TELÉFONO --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Correo electrónico</label>
+                                <input type="email" name="email" value="{{ old('email') }}"
+                                    class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                                    placeholder="ejemplo@correo.com" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Teléfono</label>
+                                <input type="text" name="telefono" value="{{ old('telefono') }}"
+                                    class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                                    placeholder="099856321">
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-blue-400 text-base">info</span>
-                        <p class="text-xs text-blue-600">El rol de <strong>Paciente</strong> se asigna automáticamente.</p>
-                    </div>
+                        {{-- CONTRASEÑAS --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Contraseña</label>
+                                <input type="password" name="password"
+                                    class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                                    placeholder="••••••••" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Confirmar contraseña</label>
+                                <input type="password" name="password_confirmation"
+                                    class="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                                    placeholder="••••••••" required>
+                            </div>
+                        </div>
 
-                    <div class="flex items-center justify-end gap-3 pt-2">
-                        <a href="{{ route('odontologo.pacientes.index') }}"
-                            class="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-100">
-                            Cancelar
-                        </a>
-                        <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold">
-                            Guardar paciente
-                        </button>
-                    </div>
-                </form>
+                        {{-- AVISO INFORMATIVO ROL --}}
+                        <div class="bg-blue-50/60 border border-blue-100 rounded-2xl p-4 flex items-center gap-3">
+                            <span class="material-symbols-outlined text-blue-500 text-xl flex-shrink-0">info</span>
+                            <p class="text-xs text-slate-600">
+                                El rol de <strong class="text-slate-800 font-semibold">Paciente</strong> se asigna automáticamente.
+                            </p>
+                        </div>
+
+                        {{-- BOTONES DE ACCIÓN --}}
+                        <div class="flex items-center justify-end gap-3 pt-4">
+                            <button type="button" onclick="window.history.back();"
+                                class="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors bg-transparent border-0 cursor-pointer">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-blue-500/20 transition-all">
+                                Guardar paciente
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
 
             </div>
         </div>
+
     </main>
 </div>
 
