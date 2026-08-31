@@ -125,8 +125,6 @@ Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(functi
         ->name('admin.historia.edit');
     Route::patch('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update'])
         ->name('admin.historia.update');
-    Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
-        ->name('admin.historia.pdf');
 });
 
 // ============================
@@ -154,8 +152,6 @@ Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(func
         ->name('odontologo.historia.edit');
     Route::patch('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update'])
         ->name('odontologo.historia.update');
-    Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
-        ->name('odontologo.historia.pdf');
 
     Route::get('/agenda', [\App\Http\Controllers\Citas\CitaController::class, 'indexOdontologo'])
         ->name('odontologo.agenda');
@@ -312,8 +308,6 @@ Route::prefix('recepcionista')->middleware(['auth', 'role:recepcionista'])->grou
         ->name('recepcionista.pacientes.historial');
     Route::get('/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
         ->name('recepcionista.pacientes.resumen');
-    Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
-        ->name('recepcionista.historia.pdf');
     Route::get('/semana', [\App\Http\Controllers\SemanaController::class, 'adminIndex'])
         ->name('recepcionista.semana');
 });
@@ -326,4 +320,16 @@ Route::middleware('auth')->group(function () {
         ->name('citas.horas-disponibles');
     Route::post('/semana/bloquear', [\App\Http\Controllers\SemanaController::class, 'bloquear'])
         ->name('semana.bloquear');
+});
+
+// ==========================================
+// DESCARGA PDF HISTORIA CLÍNICA MULTI-ROL
+// ==========================================
+Route::middleware(['auth', 'role:administrador|odontologo|recepcionista'])->group(function () {
+    Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
+        ->name('admin.historia.pdf');
+    Route::get('/odontologo/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
+        ->name('odontologo.historia.pdf');
+    Route::get('/recepcionista/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
+        ->name('recepcionista.historia.pdf');
 });
