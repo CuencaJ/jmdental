@@ -17,10 +17,10 @@
 
         {{-- HEADER --}}
         <header class="h-16 bg-white border-b border-slate-200 flex items-center gap-3 px-8">
-            <a href="{{ Auth::user()->hasRole('administrador') ? route('admin.citas.index') : route('recepcionista.citas') }}"
-                class="text-slate-400 hover:text-slate-600">
+            <button type="button" onclick="window.history.back();"
+                class="text-slate-400 hover:text-slate-600 bg-transparent border-0 p-0 flex items-center cursor-pointer">
                 <span class="material-symbols-outlined">arrow_back</span>
-            </a>
+            </button>
             <h1 class="text-xl font-bold text-slate-900">Nueva Cita</h1>
         </header>
 
@@ -91,7 +91,7 @@
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-2">Fecha y hora</label>
                             <input type="datetime-local" name="fecha_hora" 
-                                min="{{ now()->format('Y-m-d\TH:i') }}"value="{{ old('fecha_hora') }}"
+                                min="{{ now()->format('Y-m-d\TH:i') }}" value="{{ old('fecha_hora') }}"
                                 class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
                                 required>
                         </div>
@@ -130,10 +130,10 @@
                                 class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors">
                                 Guardar Cita
                             </button>
-                            <a href="{{ Auth::user()->hasRole('administrador') ? route('admin.citas.index') : route('recepcionista.citas') }}"
-                                class="flex-1 text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors">
+                            <button type="button" onclick="window.history.back();"
+                                class="flex-1 text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors cursor-pointer border-0">
                                 Cancelar
-                            </a>
+                            </button>
                         </div>
 
                     </form>
