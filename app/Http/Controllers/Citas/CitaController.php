@@ -25,7 +25,7 @@ class CitaController extends Controller
             ->orderBy('fecha_hora')
             ->get();
 
-        return view('citas.listacitas', array_merge(
+        return view('citas.Listacitas', array_merge(
             ['citas' => $citas, 'fechaFiltro' => $fechaFiltro],
             $this->contadores($citas)
         ));
