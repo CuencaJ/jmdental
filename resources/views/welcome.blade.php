@@ -53,7 +53,7 @@
 
     <!-- Hero Section -->
     <section id="hero" class="hero section light-background">
-      <img src="{{ asset('assets/img/hero-bg.jpg') }}" alt="" data-aos="fade-in">
+      <img src="{{ asset('assets/img/pagina-web-clinica-dental.jpg') }}" alt="" data-aos="fade-in">
       <div class="container position-relative">
         <div class="welcome position-relative" data-aos="fade-down" data-aos-delay="100">
           <h2>BIENVENIDO A JM DENTAL</h2>
@@ -104,7 +104,7 @@
       <div class="container">
         <div class="row gy-4 gx-5">
           <div class="col-lg-6 position-relative align-self-start" data-aos="fade-up" data-aos-delay="200">
-            <img src="{{ asset('assets/img/about.jpg') }}" class="img-fluid" alt="">
+            <img src="{{ asset('assets/img/Odontologia-PUCE.jpg') }}" class="img-fluid" alt="">
           </div>
           <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="100">
             <h3>Nosotros</h3>
