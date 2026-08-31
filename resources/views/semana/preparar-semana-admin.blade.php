@@ -156,7 +156,7 @@ function toggleBloqueo(fecha, hora, odontologoId, btn) {
     if (esBloqueado) {
         fetch('{{ route("semana.bloquear") }}', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
             body: JSON.stringify({ fecha, hora_inicio: hora, odontologo_id: odontologoId, motivo: '' })
         })
         .then(r => r.json())
@@ -178,7 +178,7 @@ function confirmarBloqueo() {
     const motivo = document.getElementById('input-motivo').value || 'Bloqueado';
     fetch('{{ route("semana.bloquear") }}', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
         body: JSON.stringify({ fecha: _fecha, hora_inicio: _hora, odontologo_id: _odontologoId, motivo })
     })
     .then(r => r.json())
