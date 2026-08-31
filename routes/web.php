@@ -98,6 +98,8 @@ Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(functi
 
     Route::get('/citas', [\App\Http\Controllers\Citas\CitaController::class, 'indexAdmin'])
         ->name('admin.citas.index');
+    Route::get('/citas/crear', [\App\Http\Controllers\Citas\CitaController::class, 'createAdmin'])
+        ->name('admin.citas.create');
     Route::post('/citas', [\App\Http\Controllers\Citas\CitaController::class, 'storeAdmin'])
         ->name('admin.citas.store');
     Route::patch('/citas/{id}/estado', [\App\Http\Controllers\Citas\CitaController::class, 'updateEstado'])
@@ -129,16 +131,10 @@ Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(functi
 // RUTAS ODONTÓLOGO
 // ============================
 Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(function () {
-    Route::get('/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'index'])
-        ->name('odontologo.pacientes.index');
     Route::get('/pacientes/crear', [\App\Http\Controllers\Odontologo\PacienteController::class, 'create'])
         ->name('odontologo.pacientes.create');
     Route::post('/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'store'])
         ->name('odontologo.pacientes.store');
-    Route::get('/pacientes/{id}', [\App\Http\Controllers\Odontologo\PacienteController::class, 'show'])
-        ->name('odontologo.pacientes.show');
-    Route::get('/pacientes/{id}/historial', [\App\Http\Controllers\Odontologo\PacienteController::class, 'historial'])
-        ->name('odontologo.pacientes.historial');
 
     Route::get('/pacientes/{id}/historia/crear', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'create'])
         ->name('odontologo.historia.create');
@@ -315,11 +311,11 @@ Route::middleware('auth')->group(function () {
 });
 
 // =========================================================================
-// RUTAS ACCESIBLES POR MÚLTIPLES ROLES (Admin, Odontólogo, Recepcionista)
+// RUTAS COMPARTIDAS MULTI-ROL (Admin, Odontólogo, Recepcionista)
 // =========================================================================
 Route::middleware(['auth', 'role:administrador|odontologo|recepcionista'])->group(function () {
-    
-    // Descarga PDF Historia Clínica (Formulario 033)
+
+    // PDF Historia Clínica (Formulario 033)
     Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
         ->name('admin.historia.pdf');
     Route::get('/odontologo/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
@@ -327,17 +323,23 @@ Route::middleware(['auth', 'role:administrador|odontologo|recepcionista'])->grou
     Route::get('/recepcionista/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
         ->name('recepcionista.historia.pdf');
 
-    // Descargar Resumen de Paciente
-    Route::get('/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
+    // Resumen de Paciente
+    Route::get('/odontologo/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
         ->name('odontologo.pacientes.resumen');
     Route::get('/admin/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
         ->name('admin.pacientes.resumen');
     Route::get('/recepcionista/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
         ->name('recepcionista.pacientes.resumen');
 
+    // Navegación y Vistas de Pacientes (Para que funcionen los botones de Volver/Atrás)
+    Route::get('/odontologo/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'index'])
+        ->name('odontologo.pacientes.index');
+    Route::get('/odontologo/pacientes/{id}', [\App\Http\Controllers\Odontologo\PacienteController::class, 'show'])
+        ->name('odontologo.pacientes.show');
+    Route::get('/odontologo/pacientes/{id}/historial', [\App\Http\Controllers\Odontologo\PacienteController::class, 'historial'])
+        ->name('odontologo.pacientes.historial');
+
     // Agendar Cita
-    Route::get('/admin/citas/crear', [\App\Http\Controllers\Citas\CitaController::class, 'createAdmin'])
-        ->name('admin.citas.create');
     Route::get('/odontologo/citas/crear', [\App\Http\Controllers\Citas\CitaController::class, 'createOdontologo'])
         ->name('odontologo.citas.create');
 });

@@ -25,17 +25,18 @@ class CitaController extends Controller
             ->orderBy('fecha_hora')
             ->get();
 
-        return view('citas.Listacitas', array_merge(
+        return view('citas.listacitas', array_merge(
             ['citas' => $citas, 'fechaFiltro' => $fechaFiltro],
             $this->contadores($citas)
         ));
     }
 
-    public function createAdmin()
+    public function createAdmin(Request $request)
     {
         $pacientes = Paciente::with('user')->get();
         $odontologos = Odontologo::with('user')->get();
-        return view('citas.crearcita', compact('pacientes', 'odontologos'));
+        $pacienteSeleccionado = $request->get('paciente_id');
+        return view('citas.crearcita', compact('pacientes', 'odontologos', 'pacienteSeleccionado'));
     }
 
     public function storeAdmin(Request $request)
@@ -68,11 +69,18 @@ class CitaController extends Controller
         ));
     }
 
-    public function createOdontologo()
+    public function createOdontologo(Request $request)
     {
         $pacientes = Paciente::with('user')->get();
+        $pacienteSeleccionado = $request->get('paciente_id');
+
+        if (!Auth::user()->hasRole('odontologo')) {
+            $odontologos = Odontologo::with('user')->get();
+            return view('citas.crearcita', compact('pacientes', 'odontologos', 'pacienteSeleccionado'));
+        }
+
         $odontologo = Odontologo::where('user_id', Auth::id())->first();
-        return view('odontologo.odontologo-agendar-cita', compact('pacientes', 'odontologo'));
+        return view('odontologo.odontologo-agendar-cita', compact('pacientes', 'odontologo', 'pacienteSeleccionado'));
     }
 
     public function storeOdontologo(Request $request)
@@ -107,11 +115,12 @@ class CitaController extends Controller
         ));
     }
 
-    public function createRecepcionista()
+    public function createRecepcionista(Request $request)
     {
         $pacientes = Paciente::with('user')->get();
         $odontologos = Odontologo::with('user')->get();
-        return view('citas.crearcita', compact('pacientes', 'odontologos'));
+        $pacienteSeleccionado = $request->get('paciente_id');
+        return view('citas.crearcita', compact('pacientes', 'odontologos', 'pacienteSeleccionado'));
     }
 
     public function storeRecepcionista(Request $request)
