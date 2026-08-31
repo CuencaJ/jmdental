@@ -9,24 +9,25 @@
     @endif
     <main class="flex-1 overflow-y-auto p-8">
 
+        {{-- BARRA SUPERIOR VOLVER Y DESCARGAR PDF --}}
         <div class="mb-6 flex items-center justify-between">
-            <a href="{{ url()->previous() }}"
+            <a href="{{ Auth::user()->hasRole('administrador') ? route('admin.usuarios.index') : (Auth::user()->hasRole('recepcionista') ? route('recepcionista.pacientes') : route('odontologo.pacientes.index')) }}"
                 class="flex items-center gap-2 text-slate-400 hover:text-blue-500 transition-colors text-sm font-semibold">
                 <span class="material-symbols-outlined text-xl">arrow_back</span>
                 <span>Volver</span>
             </a>
-            <a href="{{ Auth::user()->hasRole('odontologo') 
-                ? route('odontologo.historia.pdf', $usuario->id) 
-                : route('recepcionista.historia.pdf', $usuario->id) }}" 
+            <a href="{{ Auth::user()->hasRole('administrador') 
+                ? route('admin.historia.pdf', $usuario->id) 
+                : (Auth::user()->hasRole('recepcionista') ? route('recepcionista.historia.pdf', $usuario->id) : route('odontologo.historia.pdf', $usuario->id)) }}" 
                 target="_blank"
                 class="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
                 <span class="material-symbols-outlined text-base">download</span>
-                Descargar Historial Clinico
+                <span>Descargar Historial Clinico</span>
             </a>
         </div>
 
         {{-- CABECERA PACIENTE --}}
-        <div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6 flex items-center gap-5">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6 flex items-center gap-5 shadow-sm">
             <div class="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
                 {{ strtoupper(substr($usuario->name, 0, 2)) }}
             </div>
@@ -41,7 +42,7 @@
                         @if($paciente->tipo_sangre)
                             <span class="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-medium">{{ $paciente->tipo_sangre }}</span>
                         @endif
-                        <span class="text-xs {{ $paciente->color_denticion }} px-2 py-0.5 rounded-full font-medium">{{ $paciente->tipo_denticion }}</span>
+                        <span class="text-xs {{ $paciente->color_denticion ?? 'bg-slate-100 text-slate-700' }} px-2 py-0.5 rounded-full font-medium">{{ $paciente->tipo_denticion ?? 'Permanente' }}</span>
                     </div>
                 @endif
             </div>
@@ -52,11 +53,11 @@
 
         @forelse($citas as $cita)
             @php $t = $cita->tratamiento; @endphp
-            <div class="bg-white border border-slate-200 rounded-2xl p-6 mb-4 space-y-4">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 mb-4 space-y-4 shadow-sm">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <h3 class="font-bold text-slate-900">{{ $t->nombre }}</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">{{ $t->fecha_tratamiento->format('d/m/Y') }}</p>
+                        <p class="text-xs text-slate-400 mt-0.5">{{ $t->fecha_tratamiento ? \Carbon\Carbon::parse($t->fecha_tratamiento)->format('d/m/Y') : '-' }}</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         @if($t->costo > 0)
@@ -83,7 +84,7 @@
                     </div>
                 @endif
 
-                @if($t->piezas->count() > 0)
+                @if($t->piezas && $t->piezas->count() > 0)
                     <div>
                         <p class="text-xs font-bold uppercase text-slate-400 mb-2">Piezas trabajadas</p>
                         <div class="flex flex-wrap gap-2">
@@ -104,7 +105,7 @@
                 @endif
             </div>
         @empty
-            <div class="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+            <div class="bg-white border border-slate-200 rounded-2xl p-10 text-center shadow-sm">
                 <span class="material-symbols-outlined text-4xl text-slate-300 block mb-2">medical_information</span>
                 <p class="text-sm font-semibold text-slate-900">Sin tratamientos registrados</p>
                 <p class="text-xs text-slate-400 mt-1">Los tratamientos completados aparecerán aquí.</p>

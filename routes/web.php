@@ -315,7 +315,7 @@ Route::middleware('auth')->group(function () {
 // =========================================================================
 Route::middleware(['auth', 'role:administrador|odontologo|recepcionista'])->group(function () {
 
-    // PDF Historia Clínica (Formulario 033)
+    // PDF Historia Clínica
     Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
         ->name('admin.historia.pdf');
     Route::get('/odontologo/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
@@ -331,7 +331,7 @@ Route::middleware(['auth', 'role:administrador|odontologo|recepcionista'])->grou
     Route::get('/recepcionista/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
         ->name('recepcionista.pacientes.resumen');
 
-    // Navegación y Vistas de Pacientes (Para que funcionen los botones de Volver/Atrás)
+    // Navegación y Vistas de Pacientes
     Route::get('/odontologo/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'index'])
         ->name('odontologo.pacientes.index');
     Route::get('/odontologo/pacientes/{id}', [\App\Http\Controllers\Odontologo\PacienteController::class, 'show'])
