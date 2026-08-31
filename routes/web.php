@@ -115,16 +115,6 @@ Route::prefix('admin')->middleware(['auth', 'role:administrador'])->group(functi
 
     Route::get('/semana', [\App\Http\Controllers\SemanaController::class, 'adminIndex'])
         ->name('admin.semana');
-
-    // Historia clínica accesible desde admin
-    Route::get('/pacientes/{id}/historia/crear', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'create'])
-        ->name('admin.historia.create');
-    Route::post('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'store'])
-        ->name('admin.historia.store');
-    Route::get('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'edit'])
-        ->name('admin.historia.edit');
-    Route::patch('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update'])
-        ->name('admin.historia.update');
 });
 
 // ============================
@@ -135,15 +125,6 @@ Route::prefix('odontologo')->middleware(['auth', 'role:odontologo'])->group(func
         ->name('odontologo.pacientes.create');
     Route::post('/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'store'])
         ->name('odontologo.pacientes.store');
-
-    Route::get('/pacientes/{id}/historia/crear', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'create'])
-        ->name('odontologo.historia.create');
-    Route::post('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'store'])
-        ->name('odontologo.historia.store');
-    Route::get('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'edit'])
-        ->name('odontologo.historia.edit');
-    Route::patch('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update'])
-        ->name('odontologo.historia.update');
 
     Route::get('/agenda', [\App\Http\Controllers\Citas\CitaController::class, 'indexOdontologo'])
         ->name('odontologo.agenda');
@@ -315,31 +296,45 @@ Route::middleware('auth')->group(function () {
 // =========================================================================
 Route::middleware(['auth', 'role:administrador|odontologo|recepcionista'])->group(function () {
 
+    // Rutas con prefijo /odontologo/ (compatibilidad directa)
+    Route::get('/odontologo/pacientes/{id}/historia/crear', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'create'])->name('odontologo.historia.create');
+    Route::post('/odontologo/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'store'])->name('odontologo.historia.store');
+    Route::get('/odontologo/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'edit'])->name('odontologo.historia.edit');
+    Route::patch('/odontologo/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update'])->name('odontologo.historia.update');
+
+    // Rutas con prefijo directo /pacientes/
+    Route::get('/pacientes/{id}/historia/crear', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'create']);
+    Route::post('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'store']);
+    Route::get('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'edit']);
+    Route::patch('/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update']);
+
+    // Rutas con prefijo /admin/
+    Route::get('/admin/pacientes/{id}/historia/crear', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'create'])->name('admin.historia.create');
+    Route::post('/admin/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'store'])->name('admin.historia.store');
+    Route::get('/admin/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'edit'])->name('admin.historia.edit');
+    Route::patch('/admin/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update'])->name('admin.historia.update');
+
+    // Rutas con prefijo /recepcionista/
+    Route::get('/recepcionista/pacientes/{id}/historia/crear', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'create'])->name('recepcionista.historia.create');
+    Route::post('/recepcionista/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'store'])->name('recepcionista.historia.store');
+    Route::get('/recepcionista/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'edit'])->name('recepcionista.historia.edit');
+    Route::patch('/recepcionista/pacientes/{id}/historia', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'update'])->name('recepcionista.historia.update');
+
     // PDF Historia Clínica
-    Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
-        ->name('admin.historia.pdf');
-    Route::get('/odontologo/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
-        ->name('odontologo.historia.pdf');
-    Route::get('/recepcionista/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])
-        ->name('recepcionista.historia.pdf');
+    Route::get('/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])->name('admin.historia.pdf');
+    Route::get('/odontologo/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])->name('odontologo.historia.pdf');
+    Route::get('/recepcionista/pacientes/{id}/historia/pdf', [\App\Http\Controllers\Odontologo\HistoriaClinicaController::class, 'pdf'])->name('recepcionista.historia.pdf');
 
     // Resumen de Paciente
-    Route::get('/odontologo/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
-        ->name('odontologo.pacientes.resumen');
-    Route::get('/admin/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
-        ->name('admin.pacientes.resumen');
-    Route::get('/recepcionista/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])
-        ->name('recepcionista.pacientes.resumen');
+    Route::get('/odontologo/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])->name('odontologo.pacientes.resumen');
+    Route::get('/admin/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])->name('admin.pacientes.resumen');
+    Route::get('/recepcionista/pacientes/{id}/resumen', [\App\Http\Controllers\Odontologo\PacienteController::class, 'resumen'])->name('recepcionista.pacientes.resumen');
 
     // Navegación y Vistas de Pacientes
-    Route::get('/odontologo/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'index'])
-        ->name('odontologo.pacientes.index');
-    Route::get('/odontologo/pacientes/{id}', [\App\Http\Controllers\Odontologo\PacienteController::class, 'show'])
-        ->name('odontologo.pacientes.show');
-    Route::get('/odontologo/pacientes/{id}/historial', [\App\Http\Controllers\Odontologo\PacienteController::class, 'historial'])
-        ->name('odontologo.pacientes.historial');
+    Route::get('/odontologo/pacientes', [\App\Http\Controllers\Odontologo\PacienteController::class, 'index'])->name('odontologo.pacientes.index');
+    Route::get('/odontologo/pacientes/{id}', [\App\Http\Controllers\Odontologo\PacienteController::class, 'show'])->name('odontologo.pacientes.show');
+    Route::get('/odontologo/pacientes/{id}/historial', [\App\Http\Controllers\Odontologo\PacienteController::class, 'historial'])->name('odontologo.pacientes.historial');
 
     // Agendar Cita
-    Route::get('/odontologo/citas/crear', [\App\Http\Controllers\Citas\CitaController::class, 'createOdontologo'])
-        ->name('odontologo.citas.create');
+    Route::get('/odontologo/citas/crear', [\App\Http\Controllers\Citas\CitaController::class, 'createOdontologo'])->name('odontologo.citas.create');
 });
